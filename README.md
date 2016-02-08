@@ -9,6 +9,10 @@ simple abstraction of `Handler(Request) -> Response`.
 
 Simply export a handler function and run it with `klobb`'s CLI.
 
+```
+npm install --save klobb
+```
+
 Minimal example:
 
 ``` javascript
