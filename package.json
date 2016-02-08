@@ -1,0 +1,39 @@
+{
+  "name": "klobb",
+  "version": "0.0.1",
+  "description": "A small, experimental server focused on immutability and middleware",
+  "author": "Dan Neumann <danrodneu@gmail.com> (https://github.com/danneu)",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/danneu/klobb"
+  },
+  "files": [
+    "build/lib",
+    "build/bin/klobb"
+  ],
+  "main": "./build/lib/index.js",
+  "bin": {
+    "klobb": "./build/bin/klobb"
+  },
+  "dependencies": {
+    "babel-plugin-module-alias": "^1.2.0",
+    "babel-plugin-syntax-async-functions": "^6.3.13",
+    "babel-plugin-transform-async-to-generator": "^6.4.6",
+    "babel-plugin-transform-runtime": "^6.5.0",
+    "babel-preset-es2015": "^6.3.13",
+    "babel-register": "^6.5.1",
+    "babel-runtime": "^6.5.0",
+    "commander": "^2.9.0",
+    "immutable": "^3.7.6",
+    "lodash": "^4.2.1",
+    "ramda": "^0.19.1"
+  },
+  "devDependencies": {
+    "del": "^2.2.0",
+    "gulp": "^3.9.1",
+    "gulp-babel": "^6.1.2",
+    "gulp-cached": "^1.1.0",
+    "gulp-ext": "^1.0.0",
+    "gulp-task-listing": "^1.0.1"
+  }
+}
