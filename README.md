@@ -70,7 +70,7 @@ to all functions:
 
 ### Request
 
-The basic response looks like this:
+The basic request looks like this:
 
 ``` javascript
 Immutable.fromJS({
