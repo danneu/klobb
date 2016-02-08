@@ -158,8 +158,6 @@ function timer(handler) {
 Let's combine the examples so far on this README into an application and
 run it.
 
-I've been particularly verbose so I can illustrate what's going on:
-
 ``` javascript
 // server.js
 import { listen, Response, compose } from 'klobb';
@@ -193,7 +191,7 @@ async function helloHandler(request) {
 }
 
 const middleware = compose(timerWare, noopWare);
-export default const handler = middleware(helloHandler);
+export default middleware(helloHandler);
 ```
 
 Here's what the server logs look like when you visit the resulting service:
