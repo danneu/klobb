@@ -1,6 +1,6 @@
 {
   "name": "klobb",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "A small, experimental server focused on immutability and middleware",
   "author": "Dan Neumann <danrodneu@gmail.com> (https://github.com/danneu)",
   "repository": {
@@ -16,6 +16,7 @@
     "klobb": "./build/bin/klobb"
   },
   "scripts": {
+    "build": "gulp compile",
     "test": "NODE_ENV=development gulp test"
   },
   "dependencies": {
