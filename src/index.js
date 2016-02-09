@@ -21,9 +21,11 @@ export const compose = Middleware.compose;
 
 // Handler -> Server
 export function serve(handler, opts = {}) {
+  // If handler doesn't return a response, lift into a 404
   handler = Handler.ensureResponse(handler);
 
-  const rootHandler = Handler.whenError(handler, opts.onError || onErrorDefault);
+  // Wrap handler so that it responds to any uncaught errors
+  const rootHandler = Handler.whenError(handler, onError);
 
   const server = http.createServer((nreq, nres) => {
     const responsePromise = rootHandler(Request.fromNode(nreq, opts));
@@ -42,8 +44,11 @@ export function serve(handler, opts = {}) {
   return server;
 }
 
+// Root handler wrapper that turns all uncaught errors into responses,
+// 500 if err.statusCode is not defined.
+//
 // Error -> Response
-function onErrorDefault({ statusCode, message, stack }) {
+function onError({ statusCode, message, stack }) {
   if (statusCode) {
     return Response.make(statusCode, {}, DEV ? stack : message);
   } else {
