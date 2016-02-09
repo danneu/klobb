@@ -185,10 +185,8 @@ const middleware = compose(a, b, c)(handler)
 const middleware = a(b(c(handler)));
 ```
 
-Though klobb's `compose` also injects the important behavior of promoting
-null responses into 404s which is why you should use it for top-level middleware
-
-And during a request, the above middleware execution can be visualized as this:
+Finally, during a request the above middleware execution order
+can be visualized as this:
 
                +-------------------------------------------------+
                |    +---------------------------------------+    |
