@@ -16,6 +16,13 @@ const defaults = {
 };
 
 class Request extends Immutable.Record(defaults) {
+
+  // Builds an immutable klobb request from an underlying
+  // Node request.
+  //
+  // TODO: This is just minimally stubbed out
+  //
+  // (NodeRequest, Options) -> Request
   static fromNode(nreq, { proxy } = {}) {
     const parsed = nodeUrl.parse(nreq.url);
 
@@ -41,6 +48,11 @@ class Request extends Immutable.Record(defaults) {
   // Returns object, {} if querystring is empty
   get query() {
     return nodeUrl.parse(this.querystring, true).query;
+  }
+
+  // String -> Maybe String
+  getHeader(key) {
+    return this.getIn(['headers', key.toLowerCase()]);
   }
 }
 

@@ -136,3 +136,38 @@ test('proxy=false ignores x-forwarded-for', async t => {
   });
   t.notSame(res.statusCode, 500);
 });
+
+// Response#finalize
+
+test('response content-length is set with string body', async t => {
+  const handler = async (request) => {
+    return Response.ok('hello');
+  };
+  const url = await serve(handler);
+  const res = await client('GET', url);
+  t.same(res.statusCode, 200);
+  t.same(res.headers['content-length'], '5');
+});
+
+test('response content-length is set with buffer body', async t => {
+  const handler = async (request) => {
+    return Response.ok(new Buffer('hello'));
+  };
+  const url = await serve(handler);
+  const res = await client('GET', url);
+  t.same(res.statusCode, 200);
+  t.same(res.headers['content-length'], '5');
+});
+
+test.skip('response content-length is set with buffer body', async t => {
+});
+
+test('ignores existing content-length if it can determine the length itself', async t => {
+  const handler = async (request) => {
+    return new Response(200, { 'content-length': '42' }, 'hello');
+  };
+  const url = await serve(handler);
+  const res = await client('GET', url);
+  t.same(res.statusCode, 200);
+  t.same(res.headers['content-length'], '5');
+});

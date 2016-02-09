@@ -1,4 +1,6 @@
 
+// Node
+import Stream from 'stream';
 // 3rd
 import Immutable from 'immutable';
 
@@ -9,6 +11,10 @@ const defaults = {
 };
 
 class Response extends Immutable.Record(defaults) {
+  static make(status, headers, body) {
+    return new Response(status, headers, body);
+  }
+
   static notFound() {
     return new Response(404, {}, 'Not Found');
   }
@@ -17,7 +23,6 @@ class Response extends Immutable.Record(defaults) {
     return new Response(200, {}, body);
   }
 
-  // TODO: Ensure valid redirect status
   static redirect(url, status) {
     status = status || 302;
     return new Response(status, { 'location': url });
@@ -30,9 +35,11 @@ class Response extends Immutable.Record(defaults) {
   //
   // (Response, NodeResponse) -> void
   static send(response, nres) {
+    response = response.finalize(); // Should probably do this in outer middleware
+
     const status = response.status;
     const headers = response.headers.toObject();
-    const body = response.body || '';
+    const body = response.body;
 
     nres.writeHead(status, headers);
 
@@ -56,8 +63,35 @@ class Response extends Immutable.Record(defaults) {
     super(opts);
   }
 
+  // Calculates final headers to be sent based on the state of the request
+  //
+  // Returns new request that's ready to be used with Response.send.
+  finalize() {
+    const body = this.body || '';
+
+    // Determine content-length
+    let length;
+    if (typeof body === 'string')
+      length = Buffer.byteLength(body);
+    else if (Buffer.isBuffer(body)) 
+      length = Buffer.byteLength(body);
+    else
+      length = this.getHeader('content-length');
+
+    return this.setHeader('content-length', length);
+  }
+
+  // Does not set the header if val is undefined/null
+  //
+  // (String, any) -> Response
   setHeader(key, val) {
+    if (val === undefined || val === null) return this;
     return this.setIn(['headers', key.toLowerCase()], val);
+  }
+
+  // String -> Maybe String
+  getHeader(key) {
+    return this.getIn(['headers', key.toLowerCase()]);
   }
 }
 

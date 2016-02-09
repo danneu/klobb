@@ -55,7 +55,7 @@ export default function logger() {
       }
       logResponse(request, response, start);
 
-      return response
+      return response;
     }
   }
 }

@@ -1,5 +1,12 @@
 
 // 1st
 import logger from './logger';
+import serveStatic from './serve-static';
 
-export { logger };
+//
+// "Batteries included"
+//
+// This module exports Batteries which are just built-in middleware.
+//
+
+export { logger, serveStatic };
