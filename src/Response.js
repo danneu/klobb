@@ -21,6 +21,12 @@ export function notFound(body) {
   return make(404, {}, body);
 };
 
+// TODO: Ensure valid redirect status
+export function redirect(url, status) {
+  status = status || 302;
+  return make(status, { 'location': url });
+}
+
 ////////////////////////////////////////////////////////////
 
 // Sync the state of a klobb Response object onto the

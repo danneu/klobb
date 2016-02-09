@@ -49,7 +49,7 @@ if ('function' !== typeof handler) {
 }
 
 const port = program.port || 3000;
-klobb.listen(handler, port, (err) => {
+klobb.serve(handler).listen(port, (err) => {
   if (err) {
     console.error(err.stack);
     process.exit(1);

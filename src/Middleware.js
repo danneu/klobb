@@ -8,15 +8,6 @@ import * as Handler from './Handler';
 
 ////////////////////////////////////////////////////////////
 
-// Middleware that does nothing
-//
-// void -> Middleware
-export function noop() {
-  return function middleware(handler) {
-    return handler;
-  }
-}
-
 // Middleware -> Middleware
 function ensureResponse(mw) {
   return function middleware(handler) {
@@ -43,5 +34,18 @@ export function compose(mws) {
 
   return function middleware(handler) {
     return composed(Handler.ensureResponse(handler));
+  }
+}
+
+////////////////////////////////////////////////////////////
+// Built-in Middleware
+////////////////////////////////////////////////////////////
+
+// Middleware that does nothing
+//
+// () -> Middleware
+export function noop() {
+  return function middleware(handler) {
+    return handler;
   }
 }

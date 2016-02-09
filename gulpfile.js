@@ -4,11 +4,13 @@ const ext = require('gulp-ext');
 const babel = require('gulp-babel');
 const cache = require('gulp-cached');
 const help = require('gulp-task-listing');
+const ava = require('gulp-ava');
 
 gulp.task('help', help);
 
 gulp.task('compile', [
   'compile-bin',
+  'compile-test',
   'compile-src'
 ]);
 
@@ -19,6 +21,20 @@ gulp.task('compile-bin', function () {
   }))
   .pipe(ext.crop())
   .pipe(gulp.dest('build/bin'));
+});
+
+gulp.task('compile-test', function () {
+  return gulp.src('test/*.js')
+  .pipe(cache('test'))
+  .pipe(babel({
+    presets: ['es2015'],
+    plugins: [
+      'transform-runtime',
+      'syntax-async-functions',
+      'transform-async-to-generator'
+    ]
+  }))
+  .pipe(gulp.dest('build/test'));
 });
 
 gulp.task('compile-src', function () {
@@ -35,8 +51,13 @@ gulp.task('compile-src', function () {
   .pipe(gulp.dest('build/lib'));
 });
 
+gulp.task('test', ['compile'], function () {
+  return gulp.src('build/test/*.js')
+  .pipe(ava());
+});
+
 gulp.task('clean', function () {
   return del(['build']);
 });
 
-gulp.task('default', ['compile']);
+gulp.task('default', ['compile', 'test']);

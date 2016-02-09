@@ -10,39 +10,44 @@ import * as Response from './Response';
 import * as Handler from './Handler';
 import * as Middleware from './Middleware';
 
+const DEV = 'development' === process.env.NODE_ENV;
+
 // Convenience re-exports
 
 export { Response, Request, Handler, Middleware };
 export const compose = Middleware.compose;
 
-// Creates a server and begins listening
-//
+////////////////////////////////////////////////////////////
+
 // Handler -> Server
-export function listen(handler, port, cb) {
-  // FIXME: Middleware.compose will ensure that handler already resolves to 404
-  // if it returns undefined, but here we do it again since handler might
-  // not have been composed.
+export function serve(handler, opts = {}) {
   handler = Handler.ensureResponse(handler);
 
-  const rootHandler = Handler.whenError(handler, err => {
-    return Response.make(500, {}, err.stack);
-  });
+  const rootHandler = Handler.whenError(handler, opts.onError || onErrorDefault);
 
   const server = http.createServer((nreq, nres) => {
-    const responsePromise = rootHandler(Request.fromNode(nreq));
+    const responsePromise = rootHandler(Request.fromNode(nreq, opts));
     responsePromise
       .then(response => { 
         Response.mutateNode(response, nres);
         nres.end();
       })
       .catch(err => { 
-        // TODO: dont print stack in prod
         // Note: This shouldn't happen
-        console.error(err.stack);
+        if (DEV) console.error(err.stack);
         nres.end();
       });
   });
 
-  server.listen(port, cb);
   return server;
+}
+
+// Error -> Response
+function onErrorDefault({ statusCode, message, stack }) {
+  if (statusCode) {
+    return Response.make(statusCode, {}, DEV ? stack : message);
+  } else {
+    return Response.make(500, {}, DEV ? stack : 'Internal Server Error');
+  }
+  if (DEV) console.error(stack);
 }
