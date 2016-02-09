@@ -1,6 +1,7 @@
 
 // Node
 import assert from 'assert';
+import Stream from 'stream';
 // 3rd
 import * as Immutable from 'immutable';
 
@@ -21,6 +22,10 @@ export function notFound(body) {
   return make(404, {}, body);
 };
 
+export function json(obj) {
+  return ok(JSON.stringify(obj, null, '  '));
+}
+
 // TODO: Ensure valid redirect status
 export function redirect(url, status) {
   status = status || 302;
@@ -35,13 +40,18 @@ export function redirect(url, status) {
 // TODO: This is just minimally stubbed out
 //
 // (Response, NodeResponse) -> void
-export function mutateNode(response, nres) {
-  assert(response); // should never happen
+export function send(response, nres) {
+  assert(response); // should be falsey
 
   const status = response.get('status');
   const headers = response.get('headers').toObject();
   const body = response.get('body') || '';
 
   nres.writeHead(status, headers);
-  nres.write(body);
+
+  if (body instanceof Stream) {
+    body.pipe(nres);
+  } else {
+    nres.end(body);
+  }
 }

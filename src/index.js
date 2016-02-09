@@ -31,8 +31,7 @@ export function serve(handler, opts = {}) {
     const responsePromise = rootHandler(Request.fromNode(nreq, opts));
     responsePromise
       .then(response => { 
-        Response.mutateNode(response, nres);
-        nres.end();
+        Response.send(response, nres);
       })
       .catch(err => { 
         // Note: This shouldn't happen
