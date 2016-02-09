@@ -3,6 +3,7 @@
   "version": "0.0.3",
   "description": "A small, experimental server focused on immutability and middleware",
   "author": "Dan Neumann <danrodneu@gmail.com> (https://github.com/danneu)",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/danneu/klobb"
