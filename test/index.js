@@ -16,9 +16,9 @@ test('return undefined becomes 404', async t => {
 
 // Response
 
-test('Response.make(), explicit 200', async t => {
+test('new Response(), explicit 200', async t => {
   const handler = async (request) => {
-    return Response.make(200, {}, 'hello world');
+    return new Response(200, {}, 'hello world');
   };
   const url = await serve(handler);
   const res = await client('GET', url);
@@ -26,9 +26,9 @@ test('Response.make(), explicit 200', async t => {
   t.same(res.body, 'hello world');
 });
 
-test('Response.make(), arbitrary response code, header, and body', async t => {
+test('new Response(), arbitrary response code, header, and body', async t => {
   const handler = async (request) => {
-    return Response.make(418, {
+    return new Response(418, {
       'x-custom-header': 'foo'
     }, 'hello world');
   };
@@ -82,10 +82,10 @@ test('Response.redirect(url, status) overrides default status', async t => {
 
 test('Request has basic key/vals', async t => {
   const handler = async (request) => {
-    t.same(request.get('url'), '/test?foo=bar');
-    t.same(request.get('method'), 'GET');
-    t.same(request.get('path'), '/test');
-    t.same(request.get('querystring'), '?foo=bar');
+    t.same(request.url, '/test?foo=bar');
+    t.same(request.method, 'GET');
+    t.same(request.path, '/test');
+    t.same(request.querystring, '?foo=bar');
     return;
   };
   const url = await serve(handler);
@@ -93,9 +93,9 @@ test('Request has basic key/vals', async t => {
   t.notSame(res.statusCode, 500);
 });
 
-test('Request.query parses querystring', async t => {
+test('Request#query parses querystring', async t => {
   const handler = async (request) => {
-    t.same(Request.query(request), { foo: 'bar' });
+    t.same(request.query, { foo: 'bar' });
     return;
   };
   const url = await serve(handler);
@@ -103,9 +103,9 @@ test('Request.query parses querystring', async t => {
   t.notSame(res.statusCode, 500);
 });
 
-test('Request.query returns {} if querystring empty', async t => {
+test('Request#query returns {} if querystring empty', async t => {
   const handler = async (request) => {
-    t.same(Request.query(request), {});
+    t.same(request.query, {});
     return;
   };
   const url = await serve(handler);
@@ -115,7 +115,7 @@ test('Request.query returns {} if querystring empty', async t => {
 
 test('proxy=true uses x-forwarded-for', async t => {
   const handler = async (request) => {
-    t.same(request.get('ip'), 'proxy-ip-address');
+    t.same(request.ip, 'proxy-ip-address');
     return;
   };
   const url = await serve(handler, { proxy: true });
@@ -127,7 +127,7 @@ test('proxy=true uses x-forwarded-for', async t => {
 
 test('proxy=false ignores x-forwarded-for', async t => {
   const handler = async (request) => {
-    t.notSame(request.get('ip'), 'proxy-ip-address');
+    t.notSame(request.ip, 'proxy-ip-address');
     return;
   };
   const url = await serve(handler);

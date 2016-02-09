@@ -3,8 +3,8 @@
 import * as http from 'http';
 import assert from 'assert';
 // 1st party
-import * as Request from './Request';
-import * as Response from './Response';
+import Request from './Request';
+import Response from './Response';
 import * as Handler from './Handler';
 import * as Middleware from './Middleware';
 import * as belt from './belt';
@@ -49,9 +49,9 @@ export function serve(handler, opts = {}) {
 // Error -> Response
 function onError({ statusCode, message, stack }) {
   if (statusCode) {
-    return Response.make(statusCode, {}, DEV ? stack : message);
+    return new Response(statusCode, {}, DEV ? stack : message);
   } else {
-    return Response.make(500, {}, DEV ? stack : 'Internal Server Error');
+    return new Response(500, {}, DEV ? stack : 'Internal Server Error');
   }
   if (DEV) console.error(stack);
 }

@@ -1,6 +1,6 @@
 
 // 1st
-import * as Response from './Response';
+import Response from './Response';
 
 // Wrap a handler so that if the inner handler doesn't return a response,
 // it returns a 404;
