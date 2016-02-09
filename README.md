@@ -31,7 +31,7 @@ Minimal example:
 import { Response } from 'klobb'
 
 export default async function handler(request) {
-  return Response.make(200, { 'content-type': 'text/plain' }, 'Hello world');
+  return new Response(200, { 'content-type': 'text/plain' }, 'Hello world');
   // or
   return Response.ok('Hello world');
 }
@@ -43,7 +43,19 @@ Example with middleware:
 // server.js
 import { Response, compose } from 'klobb'
 
-const middleware = compose(logger(), static('public'), ...);
+function logger() {
+  return function middleware(handler) {
+    return async function newHandler(request) {
+      console.log(`--> ${request.method} ${request.url}`);
+      const start = Date.now();
+      const response = await handler(request);
+      console.log(`<-- ${response.status} - ${Date.now() - start} ms`);
+      return response;
+    }
+  }
+}
+
+const middleware = compose(logger(), serveStatic('public'));
 const handler = async (request) => Response.ok('Hello world');
 
 export default middleware(handler);
@@ -77,7 +89,7 @@ to all functions:
 A basic response looks like this:
 
 ``` javascript
-Immutable.fromJS({
+{
   status: 200,
   headers: { 'content-type': 'text/plain' },
   body: 'Hello, world!'
@@ -86,26 +98,26 @@ Immutable.fromJS({
 
 It always has those three keys.
 
-`body` can be a string, buffer, or stream. (TODO)
+`body` can be a string, buffer, or stream.
 
 ### Request
 
 A request kinda looks something like this:
 
 ``` javascript
-Immutable.fromJS({
+{
   url: '/test?foo=42',
   method: 'GET',
   headers: {},
   body: 'Hello, world!',
   querystring: '?foo=42'
-})
+}
 ```
 
 Though without any additional middleware, klobb does not parse the body
 at all.
 
-The underlying Node request is always available at `request.get('nreq')` and
+The underlying Node request is always available at `request.nreq` and
 is never converted into an immutable map itself.
 
 ### Handler :: async (Request -> Response)
@@ -120,11 +132,7 @@ Here's a basic handler:
 
 ``` javascript
 async function handler(req) {
-  return Immutable.fromJS({
-    status: 200,
-    headers: { 'content-type': 'text/plain' },
-    body: 'Hello, world!'
-  })
+  return new Response(200, {}, 'Hello, world!');
 }
 ```
 
@@ -197,7 +205,8 @@ can be visualized as this:
        |                                                                 v
      client                                                            client
 
-That is, `a` touches the request first and the response last.
+That is, in `compose(a, b, c)`, middleware `a` touches the request first 
+and the response last.
 
 ## Full Example
 
