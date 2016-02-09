@@ -17,18 +17,37 @@ function ensureResponse(mw) {
 
 ////////////////////////////////////////////////////////////
 
-// Wraps each middleware to return a 404 response
-// if there is never a response, i.e. if you don't return a response
-// from downstream middleware/handlers.
+// Combines multiple middleware into a single middleware function.
 //
-// TODO: Handle compose(a, b, c)
+// Since middleware are applied from right to left, middleware on the left
+// are on the "outside of the ring" -- they get the request before and touch
+// the response after middleware on the right.
 //
-// [...Middleware] -> Middleware
-export function compose(mws) {
-  assert(_.isArray(mws));
-
-  // TODO: I don't think I need this noop() anymore, but I'm too tired to
-  // think about it.
+// Example:
+//
+//     compose(a, b, c)
+//
+// can be visualized like this:
+//
+//                +-------------------------------------------------+
+//                |    +---------------------------------------+    |
+//                |    |    +-----------------------------+    |    |
+//                |    |    |                             |    |    |
+//     request -> a -> b -> c -> (handler -> response) -> c -> b -> a -> response
+//        ^                                                                 |
+//        |                                                                 v
+//      client                                                            client
+//
+// Even though middleware are regular functions that can be composed
+// using any library (like lodash, ramda, underscore), prefer to use this
+// function to compose middleware since it wraps each middleware to return
+// a 404 response if there is never a response.
+// i.e. if you forget to return a response from downstream middleware/handlers.
+//
+// ...Middleware -> Middleware
+export function compose(...mws) {
+  // inject noop() middleware so that compose() without middleware
+  // still creates a valid middleware function.
   mws = [...mws, noop()].map(ensureResponse);
   const composed = R.compose(...mws);
 
