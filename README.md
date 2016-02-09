@@ -93,7 +93,7 @@ A basic response looks like this:
   status: 200,
   headers: { 'content-type': 'text/plain' },
   body: 'Hello, world!'
-})
+}
 ```
 
 It always has those three keys.
