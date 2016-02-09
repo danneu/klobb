@@ -7,6 +7,7 @@ import * as Request from './Request';
 import * as Response from './Response';
 import * as Handler from './Handler';
 import * as Middleware from './Middleware';
+import * as belt from './belt';
 
 const DEV = 'development' === process.env.NODE_ENV;
 
