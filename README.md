@@ -72,9 +72,9 @@ to all functions:
 
 ## Concepts
 
-### Request
+### Response
 
-The basic request looks like this:
+A basic response looks like this:
 
 ``` javascript
 Immutable.fromJS({
@@ -84,20 +84,26 @@ Immutable.fromJS({
 })
 ```
 
+It always has those three keys.
+
 `body` can be a string, buffer, or stream. (TODO)
 
 ### Request
 
-Looks something like this:
+A request kinda looks something like this:
 
 ``` javascript
 Immutable.fromJS({
-  url: '',
+  url: '/test?foo=42',
   method: 'GET',
   headers: {},
-  body: 'Hello, world!'
+  body: 'Hello, world!',
+  querystring: '?foo=42'
 })
 ```
+
+Though without any additional middleware, klobb does not parse the body
+at all.
 
 ### Handler :: async (Request -> Response)
 
