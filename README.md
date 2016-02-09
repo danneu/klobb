@@ -1,5 +1,5 @@
 
-*a proof-of-concept level work-in-progress*
+*weekend-ware, proof-of-concept level work-in-progress*
 
 # klobb
 
@@ -165,6 +165,41 @@ function timer(handler) {
   };
 }
 ```
+
+Use `Middleware.compose` to compose middleware.
+
+``` javascript
+// compose is re-exported from the root module for convenience
+import { compose } from 'klobb'; 
+
+const middleware = compose(mw1, mw2, mw3);
+export default middleware(handler);
+```
+
+`compose` returns a function that applies middleware from right to left
+to the handler argument:
+
+``` javascript
+const middleware = compose(a, b, c)(handler)
+// is kinda like this
+const middleware = a(b(c(handler)));
+```
+
+Though klobb's `compose` also injects the important behavior of promoting
+null responses into 404s which is why you should use it for top-level middleware
+
+And during a request, the above middleware execution can be visualized as this:
+
+               +-------------------------------------------------+
+               |    +---------------------------------------+    |
+               |    |    +-----------------------------+    |    |
+               |    |    |                             |    |    |
+    request -> a -> b -> c -> (handler -> response) -> c -> b -> a -> response
+       ^                                                                 |
+       |                                                                 v
+     client                                                            client
+
+That is, `a` touches the request first and the response last.
 
 ## Full Example
 
