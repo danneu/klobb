@@ -105,6 +105,9 @@ Immutable.fromJS({
 Though without any additional middleware, klobb does not parse the body
 at all.
 
+The underlying Node request is always available at `request.get('nreq')` and
+is never converted into an immutable map itself.
+
 ### Handler :: async (Request -> Response)
 
 A handler is an `async` function that takes a request and returns a response.
