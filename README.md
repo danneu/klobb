@@ -3,6 +3,12 @@
 
 # klobb
 
+[![Build Status](https://travis-ci.org/danneu/klobb.svg?branch=master)](https://travis-ci.org/danneu/klobb)
+[![NPM version](https://badge.fury.io/js/klobb.svg)](http://badge.fury.io/js/klobb)
+[![Dependency Status](https://david-dm.org/danneu/klobb.svg)](https://david-dm.org/danneu/klobb)
+
+[![NPM](https://nodei.co/npm/klobb.png?downloads=true&downloadRank=true&stars=true)](https://nodei.co/npm/klobb/)
+
 A small, experimental, functional Node.js web server
 focused on middleware, immutability, and the
 simple abstraction of `Handler(Request) -> Response`.
