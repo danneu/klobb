@@ -7,11 +7,22 @@ A small, experimental, functional Node.js web server
 focused on middleware, immutability, and the
 simple abstraction of `Handler(Request) -> Response`.
 
-Simply export a handler function and run it with `klobb`'s CLI.
+In klobb, there are Handlers, Middleware, and immutable datastructures
+that repesent the Request and Response.
+
+- Handlers are async functions of signature `Request -> Response`.
+- Middleware are higher-order functions of signature `Handler -> Handler`.
+- Requests and Responses are [Immutable.js Maps][maps], so they have
+a rich API for data manipulation, though klobb provides some higher
+level helpers in the Request and Response modules.
+
+[maps]: https://facebook.github.io/immutable-js/docs/#/Map
 
 ```
 npm install --save klobb
 ```
+
+Simply export a handler function and run it with `klobb`'s CLI.
 
 Minimal example:
 
@@ -44,17 +55,6 @@ Serve:
 $ klobb -p 3000 server.js
 Listening on 3000
 ```
-
-In klobb, there are Handlers, Middleware, and immutable datastructures
-that repesent the Request and Response.
-
-- Handlers are async functions of signature `Request -> Response`.
-- Middleware are higher-order functions of signature `Handler -> Handler`.
-- Requests and Responses are [Immutable.js Maps][maps], so they have
-a rich API for data manipulation, though klobb provides some higher
-level helpers in the Request and Response modules.
-
-[maps]: https://facebook.github.io/immutable-js/docs/#/Map
 
 ## Why?
 
