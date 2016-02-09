@@ -6,7 +6,7 @@
 // Create an error to be thrown. Will be caught at top-level onError handler.
 export function createError(status, message, orig) {
   const err = new Error(message);
-  err.statusCode = status;
+  err.status = status;
   err.originalError = orig;
   return err;
 }

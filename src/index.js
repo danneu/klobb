@@ -7,13 +7,14 @@ import Request from './Request';
 import Response from './Response';
 import * as Handler from './Handler';
 import * as Middleware from './Middleware';
+import * as Batteries from './Batteries';
 import * as belt from './belt';
 
-const DEV = 'development' === process.env.NODE_ENV;
+const DEV = process.env.NODE_ENV === 'development';
 
 // Convenience re-exports
 
-export { Response, Request, Handler, Middleware };
+export { Response, Request, Handler, Middleware, Batteries };
 export const compose = Middleware.compose;
 export const createError = belt.createError
 
@@ -47,11 +48,11 @@ export function serve(handler, opts = {}) {
 // 500 if err.statusCode is not defined.
 //
 // Error -> Response
-function onError({ statusCode, message, stack }) {
-  if (statusCode) {
-    return new Response(statusCode, {}, DEV ? stack : message);
+function onError({ status, message, stack }) {
+  if (DEV) console.error(stack);
+  if (status) {
+    return new Response(status, {}, DEV ? stack : message);
   } else {
     return new Response(500, {}, DEV ? stack : 'Internal Server Error');
   }
-  if (DEV) console.error(stack);
 }
