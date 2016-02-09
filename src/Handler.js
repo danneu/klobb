@@ -14,7 +14,7 @@ export function ensureResponse(handler) {
   return whenUndefined(handler, onUndefined);
 }
 
-// (Handler, (void -> Handler)) -> Handler
+// (Handler, (() -> Handler)) -> Handler
 export function whenUndefined(handler, onUndefined) {
   return async function handlerWrappedWithOnUndefined(request) {
     let response = await handler(request);

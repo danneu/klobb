@@ -34,7 +34,7 @@ export function redirect(url, status) {
 
 ////////////////////////////////////////////////////////////
 
-// Sync the state of a klobb Response object onto the
+// Map the state of a klobb Response object onto the
 // underlying Node request object.
 //
 // TODO: This is just minimally stubbed out
@@ -49,9 +49,7 @@ export function send(response, nres) {
 
   nres.writeHead(status, headers);
 
-  if (body instanceof Stream) {
-    body.pipe(nres);
-  } else {
-    nres.end(body);
-  }
+  if (typeof body === 'string') return res.end(body);
+  if (Buffer.isBuffer(body)) return res.end(body);
+  if (body instanceof Stream) return body.pipe(nres);
 }

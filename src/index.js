@@ -2,8 +2,6 @@
 // Node
 import * as http from 'http';
 import assert from 'assert';
-// 3rd party
-import _ from 'lodash';
 // 1st party
 import * as Request from './Request';
 import * as Response from './Response';
@@ -16,6 +14,7 @@ const DEV = 'development' === process.env.NODE_ENV;
 
 export { Response, Request, Handler, Middleware };
 export const compose = Middleware.compose;
+export const createError = belt.createError
 
 ////////////////////////////////////////////////////////////
 
