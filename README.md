@@ -164,7 +164,7 @@ run it.
 
 ``` javascript
 // server.js
-import { listen, Response, compose } from 'klobb';
+import { Response, compose } from 'klobb';
 
 function timerWare(handler) {
   return async function newHandler(request) {
