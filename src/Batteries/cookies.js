@@ -84,6 +84,7 @@ const expire = R.curry((key, response) => {
   }));
 });
 
+// String -> ReqOrRes -> Bool
 const has = R.curry((key, r) => {
   return get(key, r) !== undefined;
 });

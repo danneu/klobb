@@ -3,6 +3,7 @@
 import Stream from 'stream';
 // 3rd
 import Immutable from 'immutable';
+import R from 'ramda';
 import mime from 'mime-types';
 
 const defaults = {

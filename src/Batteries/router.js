@@ -24,38 +24,39 @@ function crawl(tree, segments) {
     const paramVal = segment.substr(1); // remove leading slash
     return { node: nextNode, param: { [paramKey]: paramVal } };
   };
-  const initState = {
+  const initState = Immutable.fromJS({
     node: tree,
-    mws: new Immutable.List(),
-    params: new Immutable.Map()
-  };
+    mws: [],
+    params: {}
+  });
   const reducer = (state, segment) => {
-    const data = nextNodeData(state.node, segment);
+    const data = nextNodeData(state.get('node'), segment);
     if (!data) return R.reduced(false); // 404
-    // data is { node, params: {} || undefined }
-    const newNode = data.node;
-    const newMws = state.mws.concat(data.node.get('middleware') || []);
-    const newParams = state.params.merge(data.param);
-    return { mws: newMws, node: newNode, params: newParams };
+    return state
+      .set('node', data.node)
+      .update('mws', mws => mws.concat(data.node.get('middleware') || []))
+      .update('params', old => old.merge(data.param));
   };
 
   return R.reduce(reducer, initState, segments);
 }
 
-function handle(tree, request) {
-  const segments = R.compose(
-    R.map(s => '/' + s),
-    R.split('/'),
-    s => s.replace(/\/*$/, '') // nuke trailing comma
-  )(request.path);
+// String -> [String]
+export const intoSegments = R.compose(
+  R.map(s => '/' + s), 
+  R.split('/'), 
+  R.replace(/\/*$/, '')
+);
 
+function handle(tree, request) {
+  if (R.either(R.isNil, R.isEmpty)(tree)) return Response.notFound();
+  const segments = intoSegments(request.path);
   const hit = crawl(tree, segments);
   if (!hit) return Response.notFound();
-  if (!hit.node.has(request.method)) return Response.notFound();
-
-  const handler = hit.node.get(request.method);
-  const middleware = compose(...hit.mws.toArray());
-  return middleware(handler)(request.setIn(['state', 'params'], hit.params));
+  if (!hit.get('node').has(request.method)) return Response.notFound();
+  const handler = hit.get('node').get(request.method);
+  const middleware = compose(...hit.get('mws').toArray());
+  return middleware(handler)(request.setIn(['state', 'params'], hit.get('params')));
 }
 
 // RouteTree -> Handler

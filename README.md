@@ -234,35 +234,70 @@ const handler = Batteries.router({
 });
 ```
 
+### Templating
+
+It's trivial to bring your own templating. Just wrap your favorite library
+with a promise that resolves into HTML and then `await` it.
+
+klobb comes with a wrapper for [Nunjucks][jux] in its Batteries module.
+It's just 28 lines of code.
+
+``` javascript
+import { Batteries } from 'klobb';
+
+const render = Batteries.nunjucks('views', {
+  ext: '.html',
+  noCache: process.env.NODE_ENV === 'development'
+});
+
+const handler = Batteries.router({
+  '/': {
+    GET: async (request) => Response.ok(await render('homepage'))
+    '/:uname': {
+      middleware: [ensureAuthorized()],
+      GET: async (request) => {
+        const user = await db.getUser(request.getIn(['state', 'params', 'uname']));
+        if (!user) return Response.notFound();
+        return Response.ok(await render('show-user', { user: user }));
+      }
+    }
+  }
+});
+```
+
+The code above would expect `views/homepage.html` and `views/show-user.html`
+to exist, relative to the project root.
+
+[jux]: https://mozilla.github.io/nunjucks/
+
 ## Concepts
 
 ### Response
 
-A basic response looks like this:
+A basic response just needs three keys:
 
 ``` javascript
 {
   status: 200,
   headers: { 'content-type': 'text/plain' },
-  body: 'Hello, world!'
+  body: 'Hello, world!' // body can be one of String, Buffer, or Stream
 }
 ```
 
-It always has those three keys.
-
-`body` can be a string, buffer, or stream.
-
 ### Request
 
-A request kinda looks something like this:
+A request looks something like this:
 
 ``` javascript
 {
-  url: '/test?foo=42',
   method: 'GET',
+  url: '/test?foo=42',
+  path: '/test',
   headers: {},
   body: 'Hello, world!',
-  querystring: '?foo=42'
+  querystring: '?foo=42',
+  ip: '1.2.3.4,'
+  nreq: { ... underlying Node request ... }
 }
 ```
 
@@ -285,6 +320,20 @@ Here's a basic handler:
 ``` javascript
 async function handler(req) {
   return new Response(200, {}, 'Hello, world!');
+}
+```
+
+And here are some conveniences functions for making responses:
+
+``` javascript
+async function handler(req) {
+  return Response.make(200, {}, body);  // alternative to `new` constructor
+  return Response.ok(body);             // 200
+  return Response.notFound();           // 404
+  return Response.notModified();        // 304
+  return Response.json({ foo: 'bar' }); // JSON encoded
+  return Response.redirect(url);        // 302 Temporary
+  return Response.redirect(url, 301);   // 301 Permanent
 }
 ```
 
@@ -352,6 +401,9 @@ async function handler(request) {
   return Response.notFound();
 }
 ```
+
+I would pefer to find a way to achieve this without having to provide
+my own compose function.
 
 ## License
 
