@@ -49,7 +49,7 @@ export function serve(handler, opts = {}) {
 //
 // Error -> Response
 function onError({ status, message, stack }) {
-  if (DEV) console.error(stack);
+  console.error(stack);
   if (status) {
     return new Response(status, {}, DEV ? stack : message);
   } else {
