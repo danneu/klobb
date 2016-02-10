@@ -1,6 +1,7 @@
 
 // 3rd
 import generateEtag from 'etag';
+import R from 'ramda';
 // 1st
 import { Response } from '..';
 
@@ -10,11 +11,11 @@ export default function notModified({ etag: etag = false } = {}) {
       const response = await handler(request);
 
       // only consider HEAD and GET requests
-      if (!['HEAD', 'GET'].includes(request.method)) 
+      if (!R.contains(request.method, ['HEAD', 'GET']))
         return response;
 
       // only consider 200 responses
-      if (response.status !== 200) 
+      if (response.status !== 200)
         return response;
 
       // only consider stale requests

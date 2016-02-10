@@ -5,7 +5,6 @@ import { resolve, join } from 'path';
 
 // babel
 import preset2015 from 'babel-preset-es2015';
-import arrayIncludes from 'babel-plugin-array-includes';
 import syntaxAsync from 'babel-plugin-syntax-async-functions';
 import transformAsync from 'babel-plugin-transform-async-to-generator';
 import transformRuntime from 'babel-plugin-transform-runtime';
@@ -42,7 +41,6 @@ require('babel-register')({
     syntaxAsync,
     transformAsync,
     transformRuntime,
-    arrayIncludes,
     [alias, [
       { src: path, expose: 'babel-runtime' }
     ]]

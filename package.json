@@ -21,7 +21,6 @@
     "test": "NODE_ENV=development gulp test"
   },
   "dependencies": {
-    "babel-plugin-array-includes": "^2.0.3",
     "babel-plugin-module-alias": "1.1.0",
     "babel-plugin-syntax-async-functions": "6.3.13",
     "babel-plugin-transform-async-to-generator": "6.4.6",

@@ -32,7 +32,6 @@ gulp.task('compile-test', function () {
       'transform-runtime',
       'syntax-async-functions',
       'transform-async-to-generator',
-      'array-includes',
     ]
   }))
   .pipe(gulp.dest('build/test'));
@@ -47,7 +46,6 @@ gulp.task('compile-src', function () {
       'transform-runtime',
       'syntax-async-functions',
       'transform-async-to-generator',
-      'array-includes',
     ]
   }))
   .pipe(gulp.dest('build/lib'));

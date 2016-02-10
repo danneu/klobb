@@ -5,6 +5,7 @@ import fs from 'fs';
 // 3rd
 import resolvePath from 'resolve-path';
 import mime from 'mime-types';
+import R from 'ramda';
 // 1st
 import { Response, createError } from '..';
 
@@ -29,7 +30,7 @@ export default function serveStatic(root, { maxage: maxage = 0 } = {}) {
   return function middleware(handler) {
     return async function newHandler(request) {
       // Bail if not HEAD or GET
-      if (!['HEAD', 'GET'].includes(request.method)) {
+      if (!R.contains(request.method, ['HEAD', 'GET'])) {
         return handler(request);
       }
 

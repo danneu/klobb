@@ -61,7 +61,7 @@ Listening on 3000
 <http://localhost:3000/>
 
 Sometimes I have trouble getting klobb's CLI to launch the server
-til I add a `.babelrc` to my project root: 
+til I add a `.babelrc` to my project root:
 
 ``` javascript
 {
@@ -69,8 +69,7 @@ til I add a `.babelrc` to my project root:
   "plugins": [
     "transform-runtime",
     "syntax-async-functions",
-    "transform-async-to-generator",
-    "array-includes"
+    "transform-async-to-generator"
   ]
 }
 ```
@@ -173,7 +172,7 @@ const handler = Batteries.router({
     '/r': {
       '/:subreddit': {
         middleware: [loadSubreddit()],
-        GET: (request) => { 
+        GET: (request) => {
           const subreddit = request.getIn(['state', 'params', 'subreddit']);
           return Response.ok(`viewing subreddit ${subreddit}`)
         }
@@ -182,7 +181,7 @@ const handler = Batteries.router({
     '/u' {
       '/:user': {
         middleware: [loadUser()],
-        GET: (request) => { 
+        GET: (request) => {
           const user = request.getIn(['state', 'params', 'user']);
           return Response.ok(`viewing user ${user}`)
         },
@@ -356,7 +355,7 @@ Use `Middleware.compose` to compose middleware.
 
 ``` javascript
 // compose is re-exported from the root module for convenience
-import { compose } from 'klobb'; 
+import { compose } from 'klobb';
 
 const middleware = compose(mw1, mw2, mw3);
 export default middleware(handler);
@@ -382,7 +381,7 @@ can be visualized as this:
        |                                                                 v
      client                                                            client
 
-That is, in `compose(a, b, c)`, middleware `a` touches the request first 
+That is, in `compose(a, b, c)`, middleware `a` touches the request first
 and the response last.
 
 The benefit of using klobb's own `compose` function is that it wraps
