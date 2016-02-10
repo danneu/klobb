@@ -351,6 +351,8 @@ function noop(handler) {
 }
 ```
 
+### Composing Middleware
+
 Use `Middleware.compose` to compose middleware.
 
 ``` javascript
@@ -403,6 +405,28 @@ async function handler(request) {
 
 I would pefer to find a way to achieve this without having to provide
 my own compose function.
+
+### Middleware Helpers
+
+`Middleware.make` saves you some boilerplate by letting you create a 
+Middleware function by passing it a function of signature
+`(Handler, Request) -> Response`:
+
+``` javascript
+const mw = Middleware.make(async (handler, req) => {
+  console.log('>>');
+  const res = await handler(req);
+  console.log('<<');
+  return res;
+});
+
+const middleware = compose(mw(), mw(), mw());
+```
+
+As per [unnecessary?] middleware convention, you must still invoke 
+the function `mw()` to get the middleware function. This is so that you
+don't always need to look up whether a function is middleware or if it
+returns middleware. i.e. `mw(opts)` vs `mw`.
 
 ## License
 

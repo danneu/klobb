@@ -68,3 +68,32 @@ export function noop() {
     return handler;
   }
 }
+
+// Make middleware with less boilerplate. Pass in a function
+// that takes Handler and Request as arguments and then returns
+// a response.
+//
+// Note: As per middleware convention, this returns a function 
+// () -> Middleware
+//
+// Ex:
+//
+//     const mw = Middleware.make(async (handler, req) => {
+//       console.log('>>');
+//       const res = await handler(req);
+//       console.log('<<');
+//       return res;
+//     });
+//
+//     const middleware = compose(mw(), mw(), mw());
+//
+// ((Handler, Request) -> Response) -> (() -> Middleware)
+export function make(f) {
+  return () => {
+    return function middleware(handler) {
+      return async function newHandler(request) {
+        return f(handler, request);
+      }
+    }
+  }
+}
