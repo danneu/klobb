@@ -1,5 +1,5 @@
 
-*weekend-ware, proof-of-concept level work-in-progress*
+<img src="doak.png" align="right" height="300" hspace="5px">
 
 # klobb
 
