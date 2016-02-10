@@ -1,6 +1,6 @@
 {
   "name": "klobb",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "A small, experimental server focused on immutability and middleware",
   "author": "Dan Neumann <danrodneu@gmail.com> (https://github.com/danneu)",
   "license": "MIT",
