@@ -119,9 +119,7 @@ const Cookie = Batteries.Cookie;
 
 const middleware = compose(
   Batteries.logger(),
-  // Add ETag header to responses, serve 304 Not Modified
   Batteries.notModified({ etag: true }),
-  // Serve assets from the './public' folder
   Batteries.serveStatic('public', { maxage: 1000 * 60 * 60 * 24 }),
   Batteries.jsonBodyParser(),
   Batteries.Cookie.middleware(),
