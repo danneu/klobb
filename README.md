@@ -16,9 +16,9 @@ simple abstraction of `Handler(Request) -> Response`.
 In klobb, there are Handlers, Middleware, and immutable datastructures
 that repesent the Request and Response.
 
-- Handlers are async functions of signature `Request -> Response`.
-- Middleware are higher-order functions of signature `Handler -> Handler`.
-- Requests and Responses are [Immutable.js Maps][maps], so they have
+- **Handlers** are async functions of signature `Request -> Response`.
+- **Middleware** are higher-order functions of signature `Handler -> Handler`.
+- **Requests** and **Responses** are [Immutable.js Maps][maps], so they have
 a rich API for data manipulation, though klobb provides some higher
 level helpers in the Request and Response modules.
 
@@ -27,8 +27,41 @@ level helpers in the Request and Response modules.
 ## Install
 
 ```
-$ npm install --save klobb
+npm install --save klobb
 ```
+
+`package.json`:
+
+``` javascript
+{
+  ...
+  "scripts": {
+    "start": "klobb -p 3000 index.js"
+  }
+}
+```
+
+An app in klobb just needs to export a default async handler
+function.
+
+`index.js`:
+
+``` javascript
+import { Response } from 'klobb';
+
+export default async function(request) {
+  return Response.ok('Hello, world!');
+}
+```
+
+Now serve it:
+
+```
+$ npm start
+Listening on 3000
+```
+
+<http://localhost:3000/>
 
 ## Why?
 
@@ -44,24 +77,14 @@ to all functions:
 
     (Response, Response) -> ??? -> (Request, Response)
 
-## Getting Started
+My goal with klobb is to see if I can arrive at a nice developer experience
+for this abstraction in Javascript.
 
-Simply export a handler function and run it with `klobb`'s CLI.
+## Example
 
-Minimal example:
+### Basic
 
-``` javascript
-// server.js
-import { Response } from 'klobb'
-
-export default async function handler(request) {
-  return new Response(200, { 'content-type': 'text/plain' }, 'Hello world');
-  // or
-  return Response.ok('Hello world');
-}
-```
-
-Example with middleware:
+Logging is a classic demonstration of the middleware abstraction.
 
 ``` javascript
 // server.js
@@ -79,20 +102,51 @@ function logger() {
   }
 }
 
-const middleware = compose(logger(), serveStatic('public'));
-const handler = async (request) => Response.ok('Hello world');
+const middleware = logger();
+
+const handler = async function(request) {
+  return Response.ok('Hello world');
+}
 
 export default middleware(handler);
 ```
 
-Serve:
+### Batteries Included
 
-```
-$ klobb -p 3000 server.js
-Listening on 3000
+klobb also comes with a `Batteries` module that implements (untested)
+common and demonstratively useful middleware.
+
+``` javascript
+import { Response, Batteries, compose } from 'klobb';
+const Cookie = Batteries.Cookie;
+
+const middleware = compose(
+  Batteries.logger(),
+  // Add ETag header to responses, serve 304 Not Modified
+  Batteries.notModified({ etag: true }),
+  // Serve assets from the './public' folder
+  Batteries.serveStatic('public', { maxage: 1000 * 60 * 60 * 24 }),
+  Batteries.jsonBodyParser(),
+  Batteries.Cookie.middleware(),
+  Batteries.Flash.middleware()
+);
+
+// You update cookies by simply returning a response with the
+// cookies you want to send to the client
+
+async function handler(request) {
+  const views = (parseInt(Cookie.get('views', request), 10) || 0) + 1;
+
+  return Response.ok(`You have viewed this page ${views} time(s)`)
+    .tap(Cookie.set('views', views));
+}
+
+export default middleware(handler);
 ```
 
 ## Concepts
+
+Requests, Responses, Handlers, and Middleware.
 
 ### Response
 
@@ -130,7 +184,7 @@ at all.
 The underlying Node request is always available at `request.nreq` and
 is never converted into an immutable map itself.
 
-### Handler :: async (Request -> Response)
+### Handler :: Request -> Promise<Response>
 
 A handler is an `async` function that takes a request and returns a response.
 
@@ -146,19 +200,9 @@ async function handler(req) {
 }
 ```
 
-However, it's preferrable to use the conveniences in klobb's `Response` module:
-
-``` javascript
-import { Response } from 'klobb';
-
-async function handler(request) {
-  return Response.ok('Hello, world');
-}
-```
-
 ### Middleware :: Handler -> Handler
 
-Middleware are plain ol functions that take and return handlers.
+Middleware are functions that take and return handlers.
 
 ``` javascript
 function noop(handler) {
@@ -166,19 +210,6 @@ function noop(handler) {
     // request is going downstream
     const response = await handler(request);
     // response is coming upstream
-    return response;
-  };
-}
-```
-
-Here's the classic example of middleware that times each request:
-
-``` javascript
-function timer(handler) {
-  return newHandler(request) {
-    const start = Date.now();
-    const response = await handler(request);
-    console.log(`Time: ${start - Date.now()} ms`);
     return response;
   };
 }
@@ -198,12 +229,11 @@ export default middleware(handler);
 to the handler argument:
 
 ``` javascript
-const middleware = compose(a, b, c)(handler)
-// is kinda like this
+const middleware = compose(a, b, c)(handler);
 const middleware = a(b(c(handler)));
 ```
 
-Finally, during a request the above middleware execution order
+During a request, the above middleware execution order
 can be visualized as this:
 
                +-------------------------------------------------+
@@ -218,74 +248,15 @@ can be visualized as this:
 That is, in `compose(a, b, c)`, middleware `a` touches the request first 
 and the response last.
 
-## Full Example
-
-Let's combine the examples so far on this README into an application and
-run it.
-
-``` javascript
-// server.js
-import { Response, compose } from 'klobb';
-
-function timerWare(handler) {
-  return async function newHandler(request) {
-    console.log('[>> enter timerWare]');
-    const start = Date.now();
-    const response = await handler(request);
-    console.log(`[timerWare] ${start - Date.now()} ms`);
-    console.log('[<< exit timerWare]');
-    return response;
-  }
-}
-
-function noopWare(handler) {
-  return async function newHandler(request) {
-    console.log('[>> enter noopWare]');
-    const response = await handler(request);
-    console.log('[<< exit noopWare]');
-    return response;
-  }
-}
-
-async function helloHandler(request) {
-  console.log('[>> enter helloHandler]');
-  const response = Response.ok('Hello, world!');
-  console.log('[helloHandler] bubbling up the response now');
-  console.log('[<< exit helloHandler]');
-  return response;
-}
-
-const middleware = compose(timerWare, noopWare);
-export default middleware(helloHandler);
-```
-
-Here's what the server logs look like when you visit the resulting service:
-
-```
-$ klobb server.js
-listening on 3000
-
-$ curl http://localhost:3000
-[>> enter timerWare]
-[>> enter noopWare]
-[>> enter helloHandler]
-[helloHandler] bubbling up the response now
-[<< exit helloHandler]
-[<< exit noopWare]
-[timerWare] 3 ms
-[<< exit timerWare]
-```
-
-## More Info
-
-Returning `undefined` from middleware/handlers will resolve into a 404 response.
+The benefit of using klobb's own `compose` function is that it wraps
+each middleware function to promote null responses into 404 responses.
 
 ``` javascript
 async function handler(request) {
-  return;
+  return;  // will get promoted into a 404
 }
 
-// same as
+// e.g.
 
 import { Response } from 'klobb';
 
