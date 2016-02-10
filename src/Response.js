@@ -29,6 +29,11 @@ class Response extends Immutable.Record(defaults) {
     return new Response(200, {}, body);
   }
 
+  static json(obj) {
+    const body = JSON.stringify(obj, null, '  ');
+    return new Response(200, { 'content-type': 'application/json' }, body);
+  }
+
   static redirect(url, status) {
     status = status || 302;
     return new Response(status, { 'location': url });
@@ -56,16 +61,11 @@ class Response extends Immutable.Record(defaults) {
   }
 
   constructor(status, headers, body) {
-    // Handle plain object headers
-    if (headers !== undefined && !Immutable.Map.isMap(headers)) {
-      headers = new Immutable.Map(headers);
-    }
     // Create an object that doesn't have undefined keys so we can lean on
     // our Immutable.Record defaults
-    let opts = {};
-    if (status !== undefined) opts.status = status;
-    if (headers !== undefined) opts.headers = headers;
-    if (body !== undefined) opts.body = body;
+    const opts = R.reject(R.isNil, { status, headers, body });
+    // Handle plain objects
+    if (opts.headers) opts.headers = Immutable.Map(opts.headers)
 
     super(opts);
   }
@@ -77,13 +77,6 @@ class Response extends Immutable.Record(defaults) {
     // Don't use `this` past this point. We're accumulating
     // the final response representation.
     let finalResponse = this;
-
-    // If body isn't string/buffer/stream, then treat it as JSON
-    if (typeof finalResponse.body !== 'string' && !Buffer.isBuffer(finalResponse.body) && !(finalResponse.body instanceof Stream)) {
-      finalResponse = finalResponse
-        .setBody(JSON.stringify(finalResponse.body, null, '  '))
-        .setHeader('content-type', 'application/json');
-    }
 
     // Determine content-length
     let length;
@@ -132,11 +125,7 @@ class Response extends Immutable.Record(defaults) {
 
   // Chaining convenience
   //
-  // Ex:
-  //
-  //     Request.ok()
-  //       .tap(doSomething1)
-  //       .tap(doSomething2)
+  // Request.ok().tap(doSomething1).tap(doSomething2)
   //
   // (Response -> Response)
   tap(f) {

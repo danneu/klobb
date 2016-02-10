@@ -7,6 +7,7 @@ import notModified from './not-modified';
 import Cookie from './cookies';
 import Flash from './flash';
 import router from './router';
+import nunjucks from './nunjucks';
 
 //
 // "Batteries included"
@@ -23,6 +24,7 @@ export {
   Cookie,
   Flash,
   router,
+  nunjucks,
 };
 
 
