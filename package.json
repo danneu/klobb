@@ -1,6 +1,6 @@
 {
   "name": "klobb",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "A small, experimental server focused on immutability and middleware",
   "author": "Dan Neumann <danrodneu@gmail.com> (https://github.com/danneu)",
   "license": "MIT",
@@ -9,7 +9,7 @@
     "url": "https://github.com/danneu/klobb"
   },
   "files": [
-    "build/lib/index",
+    "build/lib",
     "build/bin/klobb"
   ],
   "main": "./build/lib/index.js",
