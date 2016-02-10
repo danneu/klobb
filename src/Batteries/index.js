@@ -8,6 +8,7 @@ import Cookie from './cookies';
 import Flash from './flash';
 import router from './router';
 import nunjucks from './nunjucks';
+import removeTrailingSlash from './remove-trailing-slash';
 
 //
 // "Batteries included"
@@ -25,6 +26,7 @@ export {
   Flash,
   router,
   nunjucks,
+  removeTrailingSlash,
 };
 
 
