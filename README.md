@@ -198,27 +198,20 @@ const handler = Batteries.router({
 export default middleware(handler);
 ```
 
+#### Wildcards (`/users/:id`) and params
+
 Wildcard segments like `'/:user'` accrete a params map that can be found
 in `request.getIn(['state', 'params'])`.
 
 Wildcards only match if there isn't an exact match segment on the same level.
 For instance, `GET /foo` will always match `/foo` before `/:uname`.
 
-In the above router example, the request to `GET /u/foo/bar` would have
-this params map:
+If `GET /users/42/big/zzz` matches the route path `'/users/:id/:size/zzz'`,
+then `request.getIn(['state', 'params'])`:
 
-``` javascript
-{
-  user: 'foo',
-  example: ':)'
-}
-```
-
-It's very rough.
+    { id: '42', size: 'big' }
 
 #### Route nesting
-
-Here's how you'd nest routes:
 
 ``` javascript
 const adminRoutes = {
@@ -242,8 +235,6 @@ const handler = Batteries.router({
 ```
 
 ## Concepts
-
-Requests, Responses, Handlers, and Middleware.
 
 ### Response
 
