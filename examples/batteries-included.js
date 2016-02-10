@@ -20,3 +20,5 @@ async function handler(request) {
 }
 
 export default middleware(handler);
+
+// serve it and check out GET / and GET /img/sleeper.jpg
