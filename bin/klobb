@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import program from 'commander';
 import * as klobb from '../lib';
-import { resolve } from 'path';
+import { resolve, join } from 'path';
 
 // babel
 import preset2015 from 'babel-preset-es2015';
@@ -26,6 +26,12 @@ if (!file) {
 if ('/' !== file[0]) {
   file = resolve(process.cwd(), file);
 }
+
+// change directory to folder of target script
+// TODO: is this right? what are the edge cases and pitfalls?
+const targetDir = resolve(join(file, '..'));
+process.chdir(targetDir);
+
 
 // Babel transformation
 const path = require.resolve('babel-runtime/package')

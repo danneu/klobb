@@ -63,12 +63,13 @@ const get = R.curry((key, r) => {
 //      response.tap(Cookie.set('key', 'val')) -> Response
 //      response.tap(Cookie.set('key', { value: 'val', ...})) -> Response
 //
-// String -> Object -> Response
+// String -> (String | Object) -> Response
 const set = R.curry((key, opts, response) => {
   assert(response instanceof Response);
   if (!_.isPlainObject(opts)) {
     opts = { value: opts };
   }
+  opts.value = String(opts.value);
   return response.setIn(['state', 'cookies', key], new Immutable.Map(opts));
 });
 
@@ -118,6 +119,11 @@ function cookieRequest(request) {
 //
 // Response -> Response
 function cookieResponse(response) {
+  // Bail if there are no cookies to set
+  const cookies = response.getIn(['state', 'cookies']);
+  if (!cookies) return response.remove('cookies');
+  if (cookies.size === 0) return response.remove('cookies');
+
   return response.updateIn(['headers', 'set-cookie'], v => {
     return (v || new Immutable.List()).withMutations(list => {
       for (let [k, obj] of response.getIn(['state', 'cookies'])) {

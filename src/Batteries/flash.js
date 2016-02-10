@@ -54,9 +54,9 @@ function flashRequest(request) {
 function flashResponse(response) {
   // Nothing to do if there's no flash info to save
   const flash = response.getIn(['state', 'flash']);
-  if (!flash || flash.size === 0) {
-    return response.remove('flash');
-  }
+  if (!flash) return response.remove('flash');
+  if (flash.size === 0) return response.remove('flash');
+
   return response.tap(Cookie.set('_flash', {
     value: JSON.stringify(flash.toJS()),
     maxAge: 10000, // expire after 10 seconds to prevent poor ux of replay
