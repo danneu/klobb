@@ -18,9 +18,7 @@ that repesent the Request and Response.
 
 - **Handlers** are async functions of signature `Request -> Response`.
 - **Middleware** are higher-order functions of signature `Handler -> Handler`.
-- **Requests** and **Responses** are [Immutable.js Maps][maps], so they have
-a rich API for data manipulation, though klobb provides some higher
-level helpers in the Request and Response modules.
+- **Requests** and **Responses** are [Immutable.js Maps][maps].
 
 [maps]: https://facebook.github.io/immutable-js/docs/#/Map
 
