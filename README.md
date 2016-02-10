@@ -216,6 +216,31 @@ this params map:
 
 It's very rough.
 
+#### Route nesting
+
+Here's how you'd nest routes:
+
+``` javascript
+const adminRoutes = {
+  '/admin': {
+    middleware: [ensureAdmin()],
+    GET: () => Response.ok('admin panel'),
+    '/users': {
+      '/:user_id': {
+        DELETE: () => {}
+      }
+    }
+  }
+};
+
+const handler = Batteries.router({
+  '/': {
+    GET: () => Response.ok('ok'),
+    '/admin': adminRoutes['/admin']
+  }
+});
+```
+
 ## Concepts
 
 Requests, Responses, Handlers, and Middleware.
