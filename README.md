@@ -25,7 +25,7 @@ level helpers in the Request and Response modules.
 [maps]: https://facebook.github.io/immutable-js/docs/#/Map
 
 ```
-npm install --save klobb
+npm install -g klobb
 ```
 
 Simply export a handler function and run it with `klobb`'s CLI.
