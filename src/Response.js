@@ -3,6 +3,7 @@
 import Stream from 'stream';
 // 3rd
 import Immutable from 'immutable';
+import mime from 'mime-types';
 
 const defaults = {
   status: 200,
@@ -46,6 +47,7 @@ class Response extends Immutable.Record(defaults) {
     if (typeof body === 'string') return nres.end(body);
     if (Buffer.isBuffer(body)) return nres.end(body);
     if (body instanceof Stream) return body.pipe(nres);
+    nres.end(body);
   }
 
   constructor(status, headers, body) {
@@ -67,18 +69,40 @@ class Response extends Immutable.Record(defaults) {
   //
   // Returns new request that's ready to be used with Response.send.
   finalize() {
-    const body = this.body || '';
+    // Don't use `this` past this point. We're accumulating
+    // the final response representation.
+    let finalResponse = this
+      .set('body', this.body || '');
+
+    // If body isn't string/buffer/stream, then treat it as JSON
+    if (typeof finalResponse.body !== 'string' && !Buffer.isBuffer(finalResponse.body) && !(finalResponse.body instanceof Stream)) {
+      finalResponse = finalResponse
+        .set('body', JSON.stringify(finalResponse.body, null, '  '))
+        .setHeader('content-type', 'application/json');
+    }
 
     // Determine content-length
     let length;
-    if (typeof body === 'string')
-      length = Buffer.byteLength(body);
-    else if (Buffer.isBuffer(body)) 
-      length = Buffer.byteLength(body);
+    if (typeof finalResponse.body === 'string')
+      length = Buffer.byteLength(finalResponse.body);
+    else if (Buffer.isBuffer(finalResponse.body)) 
+      length = Buffer.byteLength(finalResponse.body);
     else
-      length = this.getHeader('content-length');
+      length = finalResponse.getHeader('content-length');
 
-    return this.setHeader('content-length', length);
+    // Determine full content-type
+    // Ex: mime.contentType('text/plain') -> 'text/plain; chartset=utf-8'
+    let type;
+    if (typeof finalResponse.getHeader('content-type') === 'string') {
+      // mime.contentType returns false if it can't discern,
+      // so turn it into undefined
+      type = mime.contentType(finalResponse.getHeader('content-type')) || undefined;
+    }
+
+    return finalResponse
+      .setHeader('content-length', length)
+      .setHeader('content-type', type)
+      ;
   }
 
   // Does not set the header if val is undefined/null

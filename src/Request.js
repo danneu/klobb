@@ -3,6 +3,7 @@
 import nodeUrl from 'url';
 // 3rd 
 import Immutable from 'immutable';
+import typeIs from 'type-is';
 
 const defaults = {
   url: '',
@@ -11,6 +12,7 @@ const defaults = {
   querystring: '',
   headers: new Immutable.Map(),
   ip: '',
+  body: undefined,
   // regular js object, represents underlying Node request object
   nreq: {}
 };
@@ -53,6 +55,22 @@ class Request extends Immutable.Record(defaults) {
   // String -> Maybe String
   getHeader(key) {
     return this.getIn(['headers', key.toLowerCase()]);
+  }
+
+  // Uses the type-is npm module to check against the content-type
+  // of the request.
+  //
+  // Ex:
+  //
+  //     if (request.typeIs('image/*')) {
+  //       // process
+  //     } else {
+  //       throw createError(415, 'images only!');
+  //     }
+  //
+  // ...String -> String || falsey
+  typeIs(...types) {
+    return typeIs(this.nreq, types);
   }
 }
 
