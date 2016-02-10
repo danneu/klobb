@@ -156,6 +156,53 @@ async function handler(request) {
 export default middleware(handler);
 ```
 
+### Routing
+
+A cobbled together a router that takes data and outputs a handler.
+
+```
+import { Response, Batteries, compose } from 'klobb';
+
+const middleware = compose(...);
+
+const handler = Batteries.router({
+  '/': {
+    // stick middleware anywhere. they'll get applied to all downstream
+    // routes and compose with any downstream middleware.
+    middleware: [mw1(), mw2()],
+    kids: {
+      '/r': {
+        kids: {
+          '/:subreddit': {
+            middleware: [loadSubreddit()],
+            GET: (request) => { 
+              const subreddit = request.getIn(['state', 'params']);
+              return Response.ok(`viewing subreddit ${subreddit}`)
+            }
+          }
+        }
+      },
+      '/u' {
+        kids: {
+          '/:user': {
+            middleware: [loadUser()],
+            GET: (request) => { 
+              const user = request.getIn(['state', 'user']);
+              return Response.ok(`viewing user ${user}`)
+            }
+          }
+        }
+      }
+    }
+  }
+});
+
+
+export default middleware(handler);
+```
+
+The `'kids'` key is pointless and noisy though. #willfix
+
 ## Concepts
 
 Requests, Responses, Handlers, and Middleware.
