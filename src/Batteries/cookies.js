@@ -13,6 +13,8 @@ import { Response } from '..';
 // Cookie middleware
 //
 
+// TODO: Ensure vals are strings
+
 // Usage example
 //
 //     async function handler(request) {
@@ -81,6 +83,10 @@ const expire = R.curry((key, response) => {
   }));
 });
 
+const has = R.curry((key, r) => {
+  return get(key, r) !== undefined;
+});
+
 // () -> Middleware
 function middleware() {
   return function middleware(handler) {
@@ -129,4 +135,4 @@ function cookieResponse(response) {
 // Public API
 ////////////////////////////////////////////////////////////
 
-export default { get, set, expire, middleware };
+export default { get, set, expire, has, middleware };
