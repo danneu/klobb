@@ -13,8 +13,7 @@ A small, experimental, functional Node.js web server
 focused on middleware, immutability, and the
 simple abstraction of `Handler(Request) -> Response`.
 
-In klobb, there are Handlers, Middleware, and immutable datastructures
-that repesent the Request and Response.
+klobb boils down to this:
 
 - **Handlers** are async functions of signature `Request -> Response`.
 - **Middleware** are higher-order functions of signature `Handler -> Handler`.
