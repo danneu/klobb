@@ -60,6 +60,23 @@ Listening on 3000
 
 <http://localhost:3000/>
 
+Sometimes I have trouble getting klobb's CLI to launch the server
+til I add a `.babelrc` to my project root: 
+
+``` javascript
+{
+  "presets": ["es2015"],
+  "plugins": [
+    "transform-runtime",
+    "syntax-async-functions",
+    "transform-async-to-generator",
+    "array-includes"
+  ]
+}
+```
+
+I have a weak understanding of where Babel looks for config. #willfix
+
 ## Why?
 
 Inspired by Clojure's [ring](https://github.com/ring-clojure/ring), klobb
