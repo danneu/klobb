@@ -158,9 +158,9 @@ export default middleware(handler);
 
 ### Routing
 
-A cobbled together a router that takes data and outputs a handler.
+I cobbled together a router that takes a tree and outputs a handler function.
 
-```
+``` javascript
 import { Response, Batteries, compose } from 'klobb';
 
 const middleware = compose(...);
@@ -170,27 +170,24 @@ const handler = Batteries.router({
     // stick middleware anywhere. they'll get applied to all downstream
     // routes and compose with any downstream middleware.
     middleware: [mw1(), mw2()],
-    kids: {
-      '/r': {
-        kids: {
-          '/:subreddit': {
-            middleware: [loadSubreddit()],
-            GET: (request) => { 
-              const subreddit = request.getIn(['state', 'params']);
-              return Response.ok(`viewing subreddit ${subreddit}`)
-            }
-          }
+    '/r': {
+      '/:subreddit': {
+        middleware: [loadSubreddit()],
+        GET: (request) => { 
+          const subreddit = request.getIn(['state', 'params', 'subreddit']);
+          return Response.ok(`viewing subreddit ${subreddit}`)
         }
-      },
-      '/u' {
-        kids: {
-          '/:user': {
-            middleware: [loadUser()],
-            GET: (request) => { 
-              const user = request.getIn(['state', 'user']);
-              return Response.ok(`viewing user ${user}`)
-            }
-          }
+      }
+    },
+    '/u' {
+      '/:user': {
+        middleware: [loadUser()],
+        GET: (request) => { 
+          const user = request.getIn(['state', 'params', 'user']);
+          return Response.ok(`viewing user ${user}`)
+        },
+        '/:example': {
+          GET: () => Response.ok(':)')
         }
       }
     }
@@ -201,7 +198,23 @@ const handler = Batteries.router({
 export default middleware(handler);
 ```
 
-The `'kids'` key is pointless and noisy though. #willfix
+Wildcard segments like `'/:user'` accrete a params map that can be found
+in `request.getIn(['state', 'params'])`.
+
+Wildcards only match if there isn't an exact match segment on the same level.
+For instance, `GET /foo` will always match `/foo` before `/:uname`.
+
+In the above router example, the request to `GET /u/foo/bar` would have
+this params map:
+
+``` javascript
+{
+  user: 'foo',
+  example: ':)'
+}
+```
+
+It's very rough.
 
 ## Concepts
 

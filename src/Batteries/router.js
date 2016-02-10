@@ -9,48 +9,12 @@ import { Response, compose } from '..';
 // cobbled together a quick router
 //
 
-// Usage:
-//
-// const handler = router({
-//   '/': {
-//     middleware: [],
-//     GET: () => Response.ok('GET /'),
-//     kids: {
-//       '/:foo': {
-//         GET: async (request) => {
-//           Response.ok(request.getIn(['state', 'params']))
-//         }
-//       }
-//       '/test': {
-//         GET: async () => Response.ok('GET /test'),
-//         kids: {
-//           middleware: [],
-//           '/foo': {
-//             kids: {
-//               '/bar': {
-//                 kids: {
-//                   '/baz': {
-//                     GET: () => Response.ok('GET /test/foo/bar/baz'),
-//                   }
-//                 }
-//               }
-//             }
-//           }
-//         }
-//       }
-//     }
-//   }
-// });
-
 // TODO: Clean up this lulzy impl
 
 function crawl(tree, segments) {
   const nextNodeData = (node, segment) => {
     // static route
     if (node.has(segment)) return { node: node.get(segment), param: {} };
-    // if segment doesn't start with '/', llike if it's 'kids',
-    // then we don't look for a wildcard match
-    if (!segment.startsWith('/')) return false;
     // try wildcard. a node can only have one
     const wildcard = node.keySeq().find(k => k.startsWith('/:')); // string or undef
     if (!wildcard) return false;
@@ -80,7 +44,6 @@ function crawl(tree, segments) {
 
 function handle(tree, request) {
   const segments = R.compose(
-    R.intersperse('kids'),
     R.map(s => '/' + s),
     R.split('/'),
     s => s.replace(/\/*$/, '') // nuke trailing comma
