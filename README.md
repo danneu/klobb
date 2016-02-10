@@ -179,7 +179,7 @@ at all.
 The underlying Node request is always available at `request.nreq` and
 is never converted into an immutable map itself.
 
-### Handler :: Request -> Promise<Response>
+### Handler :: async (Request -> Response)
 
 A handler is an `async` function that takes a request and returns a response.
 
