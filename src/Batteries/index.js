@@ -6,6 +6,7 @@ import jsonBodyParser from './json-body-parser';
 import notModified from './not-modified';
 import Cookie from './cookies';
 import Flash from './flash';
+import router from './router';
 
 //
 // "Batteries included"
@@ -21,6 +22,7 @@ export {
   notModified,
   Cookie,
   Flash,
+  router,
 };
 
 

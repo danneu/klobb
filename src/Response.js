@@ -126,7 +126,7 @@ class Response extends Immutable.Record(defaults) {
   //
   // (Stream, fs.StatsObject) -> Response
   setBody(body, stats) {
-    body._stats = body._stats || stats; // lame
+    if (stats) body._stats = stats; // lame
     return this.set('body', body);
   }
 
