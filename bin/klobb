@@ -56,7 +56,7 @@ if ('function' !== typeof handler) {
   process.exit(1);
 }
 
-const port = program.port || 3000;
+const port = program.port || Number.parseInt(process.env.PORT, 10) || 3000;
 klobb.serve(handler).listen(port, (err) => {
   if (err) {
     console.error(err.stack);
