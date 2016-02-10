@@ -14,7 +14,9 @@ const defaults = {
   ip: '',
   body: undefined,
   // regular js object, represents underlying Node request object
-  nreq: {}
+  nreq: {},
+  // a place to store things that isn't part of the klobb request
+  state: new Immutable.Map(),
 };
 
 class Request extends Immutable.Record(defaults) {
@@ -42,6 +44,9 @@ class Request extends Immutable.Record(defaults) {
   }
 
   constructor(opts = {}) {
+    if (opts.headers !== undefined && !Immutable.Map.isMap(opts.headers)) {
+      opts.headers = new Immutable.Map(opts.headers);
+    }
     super(opts);
   }
 

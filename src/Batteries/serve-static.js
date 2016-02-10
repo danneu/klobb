@@ -14,8 +14,6 @@ import { Response, createError } from '..';
 // - `opts`:
 //     - maxage (default: 0)
 //         Tell clients to cache for milliseconds
-//     - conditionalGet (default: false)
-//         Respond to request's header
 //
 // Example:
 //
@@ -24,11 +22,7 @@ import { Response, createError } from '..';
 //    serveStatic('public', { maxage: 1000 * 60 * 60 })
 //
 // (String, Options) -> Middleware
-export default function serveStatic(
-    root, 
-    { maxage: maxage = 0, conditionalGet: conditionalGet = false } = {}
-) {
-
+export default function serveStatic(root, { maxage: maxage = 0 } = {}) {
   // Turns root into absolute path
   root = nodePath.resolve(root);
 
@@ -61,24 +55,12 @@ export default function serveStatic(
       };
 
       // File was found
-
-      // Handle conditionalGet
-      if (conditionalGet) {
-        const sinceDate = request.getHeader('if-modified-since');
-        const ms = Date.parse(sinceDate); // Int or NaN
-        const notModified = ms && Math.floor(ms / 1000) === Math.floor(stats.mtime.getTime() / 1000);
-        if (notModified) {
-          return new Response(304);
-        }
-      }
-
-      // Stream it back
       return Response.ok()
         .setHeader('last-modified', stats.mtime.toUTCString())
         .setHeader('content-length', stats.size)
         .setHeader('cache-control', `max-age=${Math.floor(maxage / 1000)}`)
         .setHeader('content-type', mime.lookup(lookupPath))
-        .set('body', fs.createReadStream(lookupPath));
+        .setBody(fs.createReadStream(lookupPath), stats);
     }
   }
 }

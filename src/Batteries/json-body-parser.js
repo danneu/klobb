@@ -78,7 +78,7 @@ export default function jsonBodyParser(
       }
 
       // Successful parse
-      return handler(request.set('body', json))
+      return handler(request.setBody(json))
     }
   }
 }

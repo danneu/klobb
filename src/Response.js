@@ -8,7 +8,8 @@ import mime from 'mime-types';
 const defaults = {
   status: 200,
   headers: new Immutable.Map(),
-  body: ''
+  body: '',
+  state: new Immutable.Map(),
 };
 
 class Response extends Immutable.Record(defaults) {
@@ -18,6 +19,10 @@ class Response extends Immutable.Record(defaults) {
 
   static notFound() {
     return new Response(404, {}, 'Not Found');
+  }
+
+  static notModified() {
+    return new Response(304, { 'content-length': 0 });
   }
 
   static ok(body) {
@@ -39,7 +44,7 @@ class Response extends Immutable.Record(defaults) {
     response = response.finalize(); // Should probably do this in outer middleware
 
     const status = response.status;
-    const headers = response.headers.toObject();
+    const headers = response.headers.toJS();
     const body = response.body;
 
     nres.writeHead(status, headers);
@@ -71,13 +76,12 @@ class Response extends Immutable.Record(defaults) {
   finalize() {
     // Don't use `this` past this point. We're accumulating
     // the final response representation.
-    let finalResponse = this
-      .set('body', this.body || '');
+    let finalResponse = this;
 
     // If body isn't string/buffer/stream, then treat it as JSON
     if (typeof finalResponse.body !== 'string' && !Buffer.isBuffer(finalResponse.body) && !(finalResponse.body instanceof Stream)) {
       finalResponse = finalResponse
-        .set('body', JSON.stringify(finalResponse.body, null, '  '))
+        .setBody(JSON.stringify(finalResponse.body, null, '  '))
         .setHeader('content-type', 'application/json');
     }
 
@@ -101,8 +105,7 @@ class Response extends Immutable.Record(defaults) {
 
     return finalResponse
       .setHeader('content-length', length)
-      .setHeader('content-type', type)
-      ;
+      .setHeader('content-type', type);
   }
 
   // Does not set the header if val is undefined/null
@@ -116,6 +119,28 @@ class Response extends Immutable.Record(defaults) {
   // String -> Maybe String
   getHeader(key) {
     return this.getIn(['headers', key.toLowerCase()]);
+  }
+
+  // Use this function to update the body so that it can maintain the optional
+  // fs.Stats object, which can be used for etag caching.
+  //
+  // (Stream, fs.StatsObject) -> Response
+  setBody(body, stats) {
+    body._stats = body._stats || stats; // lame
+    return this.set('body', body);
+  }
+
+  // Chaining convenience
+  //
+  // Ex:
+  //
+  //     Request.ok()
+  //       .tap(doSomething1)
+  //       .tap(doSomething2)
+  //
+  // (Response -> Response)
+  tap(f) {
+    return f(this);
   }
 }
 
