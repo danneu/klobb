@@ -24,9 +24,27 @@ level helpers in the Request and Response modules.
 
 [maps]: https://facebook.github.io/immutable-js/docs/#/Map
 
+## Install
+
 ```
-npm install -g klobb
+$ npm install --save klobb
 ```
+
+## Why?
+
+Inspired by Clojure's [ring](https://github.com/ring-clojure/ring), klobb
+aims to make systems slower and easier to reason about by modeling
+the request/response cycle as a succession of pure transformations:
+
+    Handler(Request) -> Response
+
+For contrast, Node itself and thus other Node frameworks like
+Express and Koa expose the request and response as mutable arguments
+to all functions:
+
+    (Response, Response) -> ??? -> (Request, Response)
+
+## Getting Started
 
 Simply export a handler function and run it with `klobb`'s CLI.
 
@@ -73,20 +91,6 @@ Serve:
 $ klobb -p 3000 server.js
 Listening on 3000
 ```
-
-## Why?
-
-Inspired by Clojure's [ring](https://github.com/ring-clojure/ring), klobb
-aims to make systems slower and easier to reason about by modeling
-the request/response cycle as a succession of pure transformations:
-
-    Handler(Request) -> Response
-
-For contrast, Node itself and thus other Node frameworks like
-Express and Koa expose the request and response as mutable arguments
-to all functions:
-
-    (Response, Response) -> ??? -> (Request, Response)
 
 ## Concepts
 
