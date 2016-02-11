@@ -3,6 +3,7 @@
 import logger from './logger';
 import serveStatic from './serve-static';
 import jsonBodyParser from './json-body-parser';
+import formBodyParser from './form-body-parser';
 import notModified from './not-modified';
 import Cookie from './cookies';
 import Flash from './flash';
@@ -21,6 +22,7 @@ export {
   logger,
   serveStatic, 
   jsonBodyParser,
+  formBodyParser,
   notModified,
   Cookie,
   Flash,

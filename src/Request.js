@@ -62,6 +62,12 @@ class Request extends Immutable.Record(defaults) {
     return this.getIn(['headers', key.toLowerCase()]);
   }
 
+  // This useless function is only here to mirror the more necessary
+  // Response#setBody.
+  setBody(body) {
+    return this.set('body', body);
+  }
+
   // Uses the type-is npm module to check against the content-type
   // of the request.
   //

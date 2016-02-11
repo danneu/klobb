@@ -37,6 +37,7 @@
     "lodash": "^4.2.1",
     "mime-types": "^2.1.9",
     "nunjucks": "^2.3.0",
+    "qs": "^6.1.0",
     "ramda": "^0.19.1",
     "raw-body": "^2.1.5",
     "resolve-path": "^1.3.0",

@@ -69,7 +69,8 @@ til I add a `.babelrc` to my project root:
   "plugins": [
     "transform-runtime",
     "syntax-async-functions",
-    "transform-async-to-generator"
+    "transform-async-to-generator",
+    "transform-object-rest-spread"
   ]
 }
 ```
