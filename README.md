@@ -159,6 +159,8 @@ export default middleware(handler);
 
 I cobbled together a router that takes a tree and outputs a handler function.
 
+Here's Reddits URL structure:
+
 ``` javascript
 import { Response, Batteries, compose } from 'klobb';
 
@@ -184,9 +186,6 @@ const handler = Batteries.router({
         GET: (request) => {
           const user = request.getIn(['state', 'params', 'user']);
           return Response.ok(`viewing user ${user}`)
-        },
-        '/:example': {
-          GET: () => Response.ok(':)')
         }
       }
     }
@@ -225,10 +224,19 @@ const adminRoutes = {
   }
 };
 
+const authenticationRoutes = {
+  '/login': { GET: ..., POST: ... },
+  '/logout': { GET: ..., DELETE: ... },
+  '/register': { GET: ..., POST: ... }
+};
+
 const handler = Batteries.router({
   '/': {
-    GET: () => Response.ok('ok'),
-    '/admin': adminRoutes['/admin']
+    GET: () => Response.ok('Homepage'),
+    // Mount them to a root
+    '/admin': adminRoutes['/admin'],
+    // Or spread them in when they're flat
+    ...authenticationRoutes
   }
 });
 ```

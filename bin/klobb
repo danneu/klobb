@@ -9,6 +9,7 @@ import syntaxAsync from 'babel-plugin-syntax-async-functions';
 import transformAsync from 'babel-plugin-transform-async-to-generator';
 import transformRuntime from 'babel-plugin-transform-runtime';
 import alias from 'babel-plugin-module-alias';
+import objectSpread from 'babel-plugin-transform-object-rest-spread';
 
 program
   .option('-p, --port <port>', 'Port to listen on (3000)', parseInt)
@@ -41,6 +42,7 @@ require('babel-register')({
     syntaxAsync,
     transformAsync,
     transformRuntime,
+    objectSpread,
     [alias, [
       { src: path, expose: 'babel-runtime' }
     ]]
