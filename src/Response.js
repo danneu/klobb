@@ -40,6 +40,12 @@ class Response extends Immutable.Record(defaults) {
     return new Response(status, { 'location': url });
   }
 
+  // Request, Maybe String -> Response
+  static redirectBack(request, altUrl) {
+    const url = request.getHeader('referrer') || altUrl || '/';
+    return new Response(302, { 'location': url });
+  }
+
   // Map the state of a klobb Response object onto the
   // underlying Node request object.
   //
@@ -83,7 +89,7 @@ class Response extends Immutable.Record(defaults) {
     let length;
     if (typeof finalResponse.body === 'string')
       length = Buffer.byteLength(finalResponse.body);
-    else if (Buffer.isBuffer(finalResponse.body)) 
+    else if (Buffer.isBuffer(finalResponse.body))
       length = Buffer.byteLength(finalResponse.body);
     else
       length = finalResponse.getHeader('content-length');

@@ -278,6 +278,94 @@ to exist, relative to the project root.
 
 [jux]: https://mozilla.github.io/nunjucks/
 
+### Validation
+
+I also put together a quick and dirty validation library in
+`Batteries/Validate.js`.
+
+For demonstration, I'll reimplement koa-skeleton's moderately
+advanced user-register validation.
+
+``` javascript
+import { Batteries, Response, Middleware } from 'klobb';
+const Flash = Batteries.Flash;
+const { v, validateBody, ValidationError } = Batteries.Validate;
+
+async function handleSignup(req) {
+  // Throws ValidationError if the following fails
+
+  const vals = validateBody(req, {
+    uname: [
+      v.tip('Username required'),
+      v.required(),
+      v.isString(),
+      v.trim(),
+      v.checkPred(s => s.length > 0),
+      v.match(/^[a-z0-9_-]+$/i,
+        'Username must only contain a-z, 0-9, underscore (_), or hypen (-)'),
+      v.match(/[a-z]/i,
+        'Username must contain at least one letter (a-z)'),
+      v.checkNotPredMemo(memo => db.findUserByUname(memo.val), 'Username taken'),
+    ],
+    password2: [
+      v.tip('Password confirmation is required'),
+      v.required(),
+      v.isString(),
+      v.checkPred(s => s.length > 0),
+    ],
+    password1: [
+      v.tip('Password is required'),
+      v.required(),
+      v.isString(),
+      v.checkPred(s => s.length > 0),
+      v.isLength(6, 100, 'Password must be 6-100 chars'),
+      v.tip('Password must match confirmation'),
+      v.checkPredMemo(memo => memo.vals.password2 === memo.val),
+    ],
+    email: [
+      v.optional(),
+      v.tip('Invalid email address'),
+      v.trim(),
+      v.isEmail(),
+      v.isLength(1, 140, 'Email is too long'),
+    ]
+  });
+
+  // If it succeeds, then we will make it down here and `vals`
+  // will be set to an obj of our validated parameters.
+
+  const user = await db.insertUser(vals.uname, vals.password1, vals.email);
+
+  return Response.redirect(user.url)
+    .tap(Flash.set('message', ['success', 'Successfully registered. Welcome!']));
+}
+
+const interceptValidationError = Middleware.make(async (handler, request) => {
+  try {
+    return await handler(request);
+  } catch(err) {
+    if (err instanceof ValidationError) {
+      return Response.redirectBack(request)
+        .tap(Flash.set('message', ['dange', err.message || 'Validation error']))
+        .tap(Flash.set('progress', request.body));
+    }
+    throw err;
+  }
+});
+
+
+const handler = Batteries.router({
+  '/': {
+    '/users': {
+      middleware: [interceptValidationError()],
+      POST: handleCreateUser
+    }
+  }
+});
+```
+
+[koa-val]: https://github.com/danneu/koa-skeleton/blob/4d654c8963848d171e9b2ae3e0ef91721058d1e1/src/routes/authentication.js#L88-L115
+
 ## Concepts
 
 ### Response
@@ -417,7 +505,7 @@ my own compose function.
 
 ### Middleware Helpers
 
-`Middleware.make` saves you some boilerplate by letting you create a 
+`Middleware.make` saves you some boilerplate by letting you create a
 Middleware function by passing it a function of signature
 `(Handler, Request) -> Response`:
 
@@ -432,7 +520,7 @@ const mw = Middleware.make(async (handler, req) => {
 const middleware = compose(mw(), mw(), mw());
 ```
 
-As per [unnecessary?] middleware convention, you must still invoke 
+As per [unnecessary?] middleware convention, you must still invoke
 the function `mw()` to get the middleware function. This is so that you
 don't always need to look up whether a function is middleware or if it
 returns middleware. i.e. `mw(opts)` vs `mw`.
