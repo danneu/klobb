@@ -558,9 +558,9 @@ Or, even simpler:
 
 ``` javascript
 const handler = Batteries.negotiate({
-  text: () => return Response.ok('Hello'),
-  html: () => return Response.ok('<p>Hello</p>'),
-  json: () => return Response.json({ message: 'Hello' })
+  text: () => Response.ok('Hello'),
+  html: () => Response.ok('<p>Hello</p>'),
+  json: () => Response.json({ message: 'Hello' })
 });
 ```
 
@@ -581,7 +581,8 @@ const handler = Batteries.negotiate({
 });
 ```
 
-Though be sure to respond with the appropriate 406 status code.
+Though be sure to respond with the appropriate 406 status code if you
+implement your own default branch handler.
 
 [format]: http://expressjs.com/en/4x/api.html#res.format
 
