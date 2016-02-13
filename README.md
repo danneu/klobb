@@ -480,7 +480,7 @@ This basically means that their core keys cannot be removed, and arbitrary
 keys cannot be added.
 
 Instead, each Request and Response has a `.state` field which is an
-[Immutable.js Map][map] that can be arbitrarily modified. Any extensions to
+[Immutable.js Map][maps] that can be arbitrarily modified. Any extensions to
 a Request or Response should be stored in the state map.
 
 For example, here's an example of common middleware that uses the "session_id"
