@@ -242,6 +242,17 @@ const handler = Batteries.router({
 });
 ```
 
+**Caveat:** The router is naive and doesn't do any sort of backtracking.
+
+Given these two routes:
+
+    /users/admin
+    /users/:user/info
+
+The request `GET /users/admin/info` will 404 since the router makes no 
+attempt to reverse into the `/:user/info` branch once it commits to the 
+`/admin` branch.
+
 ### Templating
 
 It's trivial to bring your own templating. Just wrap your favorite library
