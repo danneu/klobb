@@ -461,7 +461,7 @@ const jsonErrors = Middleware.make(async (handler, request) => {
   } catch(err) {
     const status = err.status || 500;
     const message = err.message || statuses[status];
-    return Response.json({ error: message }).setStatus(status);
+    return new Response(status).json({ error: message });
   }
 });
 
