@@ -20,6 +20,16 @@
     "build": "gulp compile",
     "test": "NODE_ENV=development gulp test"
   },
+  "keywords": [
+    "framework",
+    "web",
+    "api",
+    "app",
+    "router",
+    "immutable",
+    "untested",
+    "weekendware"
+  ],
   "dependencies": {
     "babel-plugin-module-alias": "1.1.0",
     "babel-plugin-syntax-async-functions": "6.3.13",
