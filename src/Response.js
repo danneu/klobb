@@ -83,30 +83,26 @@ class Response extends Immutable.Record(defaults) {
   // Calculates final headers to be sent based on the state of the request
   // Returns new request that's ready to be used with Response.send.
   finalize () {
-    // Don't use `this` past this point. We're accumulating
-    // the final response representation.
-    let finalResponse = this
-
     // Determine content-length
     let length
-    if (typeof finalResponse.body === 'string') {
-      length = Buffer.byteLength(finalResponse.body)
-    } else if (Buffer.isBuffer(finalResponse.body)) {
-      length = Buffer.byteLength(finalResponse.body)
+    if (typeof this.body === 'string') {
+      length = Buffer.byteLength(this.body)
+    } else if (Buffer.isBuffer(this.body)) {
+      length = Buffer.byteLength(this.body)
     } else {
-      length = finalResponse.getHeader('content-length')
+      length = this.getHeader('content-length')
     }
 
     // Determine full content-type
     // Ex: mime.contentType('text/plain') -> 'text/plain; chartset=utf-8'
     let type
-    if (typeof finalResponse.getHeader('content-type') === 'string') {
+    if (typeof this.getHeader('content-type') === 'string') {
       // mime.contentType returns false if it can't discern,
       // so turn it into undefined
-      type = mime.contentType(finalResponse.getHeader('content-type')) || undefined
+      type = mime.contentType(this.getHeader('content-type')) || undefined
     }
 
-    return finalResponse
+    return this
       .setHeaders({
         'content-length': length,
         'content-type': type
