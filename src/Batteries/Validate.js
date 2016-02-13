@@ -70,20 +70,20 @@ const Validate = {
 // memo: { val: _, tip: '', err: _, key: _, isRequired: true }
 const v = {
   // Update tip for downstream stuff until something else changes it
-  tip: newTip => {
-    return memo => {
+  tip: (newTip) => {
+    return (memo) => {
       return R.merge(memo, { tip: newTip })
     }
   },
   required: (tip) => {
-    return memo => {
+    return (memo) => {
       memo = R.merge(memo, { isRequired: true })
       if (memo.val !== undefined) return memo
       return R.merge(memo, { err: makeError(memo.key, tip || memo.tip) })
     }
   },
   optional: () => {
-    return memo => {
+    return (memo) => {
       memo = R.merge(memo, { isRequired: false })
       // if val is undefined or empty string, then short-circuit
       if (memo.val === undefined || memo.val === '') return R.reduced(memo)
@@ -91,13 +91,13 @@ const v = {
     }
   },
   isString: (tip) => {
-    return memo => {
+    return (memo) => {
       if (typeof memo.val === 'string') return memo
       return R.merge(memo, { err: makeError(memo.key, tip || memo.tip) })
     }
   },
   toInteger: (tip) => {
-    return memo => {
+    return (memo) => {
       const parsed = Number.parseInt(memo.val, 10)
       // fail
       if (!Number.isInteger(parsed)) {
@@ -113,13 +113,13 @@ const v = {
     }
   },
   isInteger: (tip) => {
-    return memo => {
+    return (memo) => {
       if (Number.isInteger(memo.val)) return memo
       return R.merge(memo, { err: makeError(memo.key, tip || memo.tip) })
     }
   },
   checkPred: (pred, tip) => {
-    return memo => {
+    return (memo) => {
       // pass
       if (pred(memo.val)) return memo
       // fail
@@ -128,12 +128,12 @@ const v = {
   },
   // arbitrarily change value, fn gets old value, should return a new one
   tap: (fn) => {
-    return memo => {
+    return (memo) => {
       return R.merge(memo, { val: fn(memo.val) })
     }
   },
   match: (re, tip) => {
-    return memo => {
+    return (memo) => {
       // pass
       if (re.test(memo.val)) return memo
       // fail
@@ -141,7 +141,7 @@ const v = {
     }
   },
   notMatch: (re, tip) => {
-    return memo => {
+    return (memo) => {
       // pass
       if (!re.test(memo.val)) return memo
       // fail
@@ -149,23 +149,23 @@ const v = {
     }
   },
   check: (result, tip) => {
-    return memo => {
+    return (memo) => {
       // pass
-      if (Boolean(result)) return memo
+      if (result) return memo
       // fail
       return R.merge(memo, { err: makeError(memo.key, tip || memo.tip) })
     }
   },
   checkNot: (result, tip) => {
-    return memo => {
+    return (memo) => {
       // pass
-      if (!Boolean(result)) return memo
+      if (!result) return memo
       // fail
       return R.merge(memo, { err: makeError(memo.key, tip || memo.tip) })
     }
   },
   isLength: (min, max, tip) => {
-    return memo => {
+    return (memo) => {
       // pass
       const len = memo.val.length
       if (len >= min && len <= max) return memo
@@ -174,13 +174,13 @@ const v = {
     }
   },
   trim: () => {
-    return memo => {
+    return (memo) => {
       return R.merge(memo, { val: memo.val.trim() })
     }
   },
   // assert something against the memo
   checkPredMemo: (pred, tip) => {
-    return memo => {
+    return (memo) => {
       // pass
       if (pred(memo)) return memo
       // fail
@@ -188,7 +188,7 @@ const v = {
     }
   },
   checkNotPredMemo: (pred, tip) => {
-    return memo => {
+    return (memo) => {
       // pass
       if (!pred(memo)) return memo
       // fail
@@ -196,7 +196,7 @@ const v = {
     }
   },
   isEmail: (tip) => {
-    return memo => {
+    return (memo) => {
       // pass
       if (isEmail(memo.val)) return memo
       // fail

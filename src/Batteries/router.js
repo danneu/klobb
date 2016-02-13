@@ -16,7 +16,7 @@ function crawl (tree, segments) {
     // static route
     if (node.has(segment)) return { node: node.get(segment), param: {} }
     // try wildcard. a node can only have one
-    const wildcard = node.keySeq().find(k => k.startsWith('/:')) // string or undef
+    const wildcard = node.keySeq().find((k) => k.startsWith('/:')) // string or undef
     if (!wildcard) return false
     const nextNode = node.get(wildcard)
     // wildcard could be '/:uname'
@@ -34,8 +34,8 @@ function crawl (tree, segments) {
     if (!data) return R.reduced(false) // 404
     return state
       .set('node', data.node)
-      .update('mws', mws => mws.concat(data.node.get('middleware') || []))
-      .update('params', old => old.merge(data.param))
+      .update('mws', (mws) => mws.concat(data.node.get('middleware') || []))
+      .update('params', (old) => old.merge(data.param))
   }
 
   return R.reduce(reducer, initState, segments)
@@ -43,7 +43,7 @@ function crawl (tree, segments) {
 
 // String -> [String]
 export const intoSegments = R.compose(
-  R.map(s => '/' + s),
+  R.map((s) => '/' + s),
   R.split('/'),
   R.replace(/\/*$/, '')
 )

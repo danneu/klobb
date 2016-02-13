@@ -7,8 +7,8 @@ import { Response } from '..'
 //
 function removeTrailingSlash () {
   const re = /([^/]+)\/+$/
-  const hasSlash = s => re.test(s)
-  const trimSlash = s => s.replace(re, '$1')
+  const hasSlash = (s) => re.test(s)
+  const trimSlash = (s) => s.replace(re, '$1')
 
   return function middleware (handler) {
     return async function newHandler (request) {

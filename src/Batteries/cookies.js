@@ -125,8 +125,8 @@ function cookieResponse (response) {
   if (!cookies) return response.remove('cookies')
   if (cookies.size === 0) return response.remove('cookies')
 
-  return response.updateIn(['headers', 'set-cookie'], v => {
-    return (v || new Immutable.List()).withMutations(list => {
+  return response.updateIn(['headers', 'set-cookie'], (v) => {
+    return (v || new Immutable.List()).withMutations((list) => {
       for (let [k, obj] of response.getIn(['state', 'cookies'])) {
         // obj is at least { value: ... }
         const cookieValue = obj.get('value')

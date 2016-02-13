@@ -32,12 +32,12 @@ export function serve (handler, opts = {}) {
   const server = http.createServer((nreq, nres) => {
     const responsePromise = rootHandler(Request.fromNode(nreq, opts))
     responsePromise
-      .then(response => {
+      .then((response) => {
         Response.send(response, nres)
       })
-      .catch(err => {
+      .catch((err) => {
         // Note: This shouldn't happen
-        if (DEV) console.error(err.stack)
+        console.error(err.stack)
         nres.end()
       })
   })

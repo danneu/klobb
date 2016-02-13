@@ -1,5 +1,7 @@
 {
   "extends": "standard",
   "parser": "babel-eslint",
-  "rules": {}
+  "rules": {
+    "arrow-parens": [2, "always"]
+  }
 }
