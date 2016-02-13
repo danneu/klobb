@@ -42,9 +42,8 @@ class Response extends Immutable.Record(defaults) {
     return new Response(status, { 'location': url })
   }
 
-  // Request, Maybe String -> Response
-  static redirectBack (request, altUrl) {
-    const url = request.getHeader('referrer') || altUrl || '/'
+  static redirectBack (request, altUrl = '/') {
+    const url = request.getHeader('referrer') || altUrl
     return new Response(302, { 'location': url })
   }
 
