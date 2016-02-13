@@ -17,9 +17,15 @@ klobb boils down to this:
 
 - **Handlers** are async functions of signature `Request -> Response`.
 - **Middleware** are higher-order functions of signature `Handler -> Handler`.
-- **Requests** and **Responses** are [Immutable.js Maps][maps].
+- **Requests** and **Responses** are [Immutable.js Records][maps].
 
-[maps]: https://facebook.github.io/immutable-js/docs/#/Map
+``` javascript
+import { Response } from 'klobb'
+
+export default function handler (request) {
+  return Response.ok('Hello, world!')
+}
+```
 
 ## Install
 
@@ -473,8 +479,6 @@ export default middleware(handler)
 
 klobb's Request and Response objects are [Immutable.js Records][records].
 
-[records]: https://facebook.github.io/immutable-js/docs/#/Record
-
 This basically means that their core keys cannot be removed, and arbitrary
 keys cannot be added. But they have most of the instance methods of 
 [Immutable.js Maps][maps].
@@ -749,3 +753,7 @@ returns middleware. i.e. `mw(opts)` vs `mw`.
 ## License
 
 MIT
+
+[maps]: https://facebook.github.io/immutable-js/docs/#/Map
+[records]: https://facebook.github.io/immutable-js/docs/#/Record
+
