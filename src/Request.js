@@ -1,10 +1,10 @@
 
 // Node
-import nodeUrl from 'url';
-// 3rd 
-import Immutable from 'immutable';
-import typeIs from 'type-is';
-import accepts from 'accepts';
+import nodeUrl from 'url'
+// 3rd
+import Immutable from 'immutable'
+import typeIs from 'type-is'
+import accepts from 'accepts'
 
 const defaults = {
   url: '',
@@ -17,8 +17,8 @@ const defaults = {
   // regular js object, represents underlying Node request object
   nreq: {},
   // a place to store things that isn't part of the klobb request
-  state: new Immutable.Map(),
-};
+  state: new Immutable.Map()
+}
 
 class Request extends Immutable.Record(defaults) {
 
@@ -28,45 +28,45 @@ class Request extends Immutable.Record(defaults) {
   // TODO: This is just minimally stubbed out
   //
   // (NodeRequest, Options) -> Request
-  static fromNode(nreq, { proxy } = {}) {
-    const parsed = nodeUrl.parse(nreq.url);
+  static fromNode (nreq, { proxy } = {}) {
+    const parsed = nodeUrl.parse(nreq.url)
 
-    return new Request({ 
+    return new Request({
       url: nreq.url,
       method: nreq.method,
       path: parsed.pathname,
       querystring: parsed.search || '',
       headers: nreq.headers,
-      ip: proxy 
+      ip: proxy
         ? nreq.headers['x-forwarded-for'] || nreq.connection.remoteAddress
         : nreq.connection.remoteAddress,
       nreq: nreq
-    });
+    })
   }
 
-  constructor(opts = {}) {
+  constructor (opts = {}) {
     if (opts.headers !== undefined && !Immutable.Map.isMap(opts.headers)) {
-      opts.headers = new Immutable.Map(opts.headers);
+      opts.headers = new Immutable.Map(opts.headers)
     }
-    super(opts);
+    super(opts)
   }
 
   // Parses querystring on demand
   //
   // Returns object, {} if querystring is empty
-  get query() {
-    return nodeUrl.parse(this.querystring, true).query;
+  get query () {
+    return nodeUrl.parse(this.querystring, true).query
   }
 
   // String -> Maybe String
-  getHeader(key) {
-    return this.getIn(['headers', key.toLowerCase()]);
+  getHeader (key) {
+    return this.getIn(['headers', key.toLowerCase()])
   }
 
   // This useless function is only here to mirror the more necessary
   // Response#setBody.
-  setBody(body) {
-    return this.set('body', body);
+  setBody (body) {
+    return this.set('body', body)
   }
 
   // Uses the type-is npm module to check against the content-type
@@ -81,16 +81,16 @@ class Request extends Immutable.Record(defaults) {
   //     }
   //
   // ...String -> String || falsey
-  typeIs(...types) {
-    return typeIs(this.nreq, types);
+  typeIs (...types) {
+    return typeIs(this.nreq, types)
   }
 
   // CONTENT NEGOTIATION
 
-  accepts(...types) {
-    const accept = accepts(this.nreq);
-    return accept.type(types);
+  accepts (...types) {
+    const accept = accepts(this.nreq)
+    return accept.type(types)
   }
 }
 
-export default Request;
+export default Request

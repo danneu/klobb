@@ -1,44 +1,44 @@
 #!/usr/bin/env node
-import program from 'commander';
-import { resolve, join } from 'path';
+import program from 'commander'
+import { resolve, join } from 'path'
 
 // klobb
-import * as klobb from '../lib';
-import { version } from '../../package.json'; // relative to ./build/bin/klobb
+import * as klobb from '../lib'
+import { version } from '../../package.json' // relative to ./build/bin/klobb
 
 // babel
-import preset2015 from 'babel-preset-es2015';
-import syntaxAsync from 'babel-plugin-syntax-async-functions';
-import transformAsync from 'babel-plugin-transform-async-to-generator';
-import transformRuntime from 'babel-plugin-transform-runtime';
-import alias from 'babel-plugin-module-alias';
-import objectSpread from 'babel-plugin-transform-object-rest-spread';
+import preset2015 from 'babel-preset-es2015'
+import syntaxAsync from 'babel-plugin-syntax-async-functions'
+import transformAsync from 'babel-plugin-transform-async-to-generator'
+import transformRuntime from 'babel-plugin-transform-runtime'
+import alias from 'babel-plugin-module-alias'
+import objectSpread from 'babel-plugin-transform-object-rest-spread'
 
 program
   .version(version)
   .option('-p, --port <port>', 'Port to listen on (3000)', parseInt)
-  .parse(process.argv);
+  .parse(process.argv)
 
-let file = program.args[program.args.length - 1];
+let file = program.args[program.args.length - 1]
 
 if (!file) {
-  console.error(`\nError: Please supply a file`);
-  program.outputHelp();
-  process.exit(1);
+  console.error(`\nError: Please supply a file`)
+  program.outputHelp()
+  process.exit(1)
 }
 
-if ('/' !== file[0]) {
-  file = resolve(process.cwd(), file);
+if (file[0] !== '/') {
+  file = resolve(process.cwd(), file)
 }
 
 // change directory to folder of target script
 // TODO: is this right? what are the edge cases and pitfalls?
-const targetDir = resolve(join(file, '..'));
-process.chdir(targetDir);
+const targetDir = resolve(join(file, '..'))
+process.chdir(targetDir)
 
 // Babel transformation
 const path = require.resolve('babel-runtime/package')
-  .replace(/[\\\/]package.json$/, '');
+  .replace(/[\\\/]package.json$/, '')
 require('babel-register')({
   presets: [preset2015],
   plugins: [
@@ -50,21 +50,21 @@ require('babel-register')({
       { src: path, expose: 'babel-runtime' }
     ]]
   ]
-});
+})
 
-const handler = require(file).default;
+const handler = require(file).default
 
-if ('function' !== typeof handler) {
-  console.error(`Error: "${file}" does not export a handler function`);
-  process.exit(1);
+if (typeof handler !== 'function') {
+  console.error(`Error: "${file}" does not export a handler function`)
+  process.exit(1)
 }
 
-const port = program.port || Number.parseInt(process.env.PORT, 10) || 3000;
+const port = program.port || Number.parseInt(process.env.PORT, 10) || 3000
 klobb.serve(handler).listen(port, (err) => {
   if (err) {
-    console.error(err.stack);
-    process.exit(1);
+    console.error(err.stack)
+    process.exit(1)
   }
 
-  console.log(`Listening on ${port}`);
-});
+  console.log(`Listening on ${port}`)
+})

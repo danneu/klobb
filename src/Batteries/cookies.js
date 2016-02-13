@@ -1,13 +1,13 @@
 
 // Node
-import assert from 'assert';
+import assert from 'assert'
 // 3rd
-import R from 'ramda';
-import cookie from 'cookie';
-import Immutable from 'immutable';
-import _ from 'lodash';
+import R from 'ramda'
+import cookie from 'cookie'
+import Immutable from 'immutable'
+import _ from 'lodash'
 // 1st
-import { Response } from '..';
+import { Response } from '..'
 
 //
 // Cookie middleware
@@ -20,7 +20,7 @@ import { Response } from '..';
 //     async function handler(request) {
 //       // Get or initialize counter from request cookie
 //       const counter = Number.parseInt(Cookie.get('counter', request)) || 0;
-//     
+//
 //       // Set a cookie using Cookie.set(key, val, response)
 //       // - val is { value: newValue, ...opts }
 //       // - if val is not an object, then it desugars into { value: val }
@@ -33,7 +33,7 @@ import { Response } from '..';
 //         }));
 //     }
 
-////////////////////////////////////////////////////////////
+// =========================================================
 
 // r can be request or response
 //
@@ -48,8 +48,8 @@ import { Response } from '..';
 //
 // String -> R -> R
 const get = R.curry((key, r) => {
-  return r.getIn(['state', 'cookies', key]);
-});
+  return r.getIn(['state', 'cookies', key])
+})
 
 // val can be string or object
 // See full options here: https://github.com/jshttp/cookie#more
@@ -65,81 +65,78 @@ const get = R.curry((key, r) => {
 //
 // String -> (String | Object) -> Response
 const set = R.curry((key, opts, response) => {
-  assert(response instanceof Response);
+  assert(response instanceof Response)
   if (!_.isPlainObject(opts)) {
-    opts = { value: opts };
+    opts = { value: opts }
   }
-  opts.value = String(opts.value);
-  return response.setIn(['state', 'cookies', key], new Immutable.Map(opts));
-});
+  opts.value = String(opts.value)
+  return response.setIn(['state', 'cookies', key], new Immutable.Map(opts))
+})
 
 // Delete cookie (sends Set-Cookie header with expires set to the past)
 //
 // String -> Response -> Response
 const expire = R.curry((key, response) => {
-  assert(response instanceof Response);
+  assert(response instanceof Response)
   return response.setIn(['state', 'cookies', key], new Immutable.Map({
     value: '',
     expires: new Date(0)
-  }));
-});
+  }))
+})
 
 // String -> ReqOrRes -> Bool
 const has = R.curry((key, r) => {
-  return get(key, r) !== undefined;
-});
+  return get(key, r) !== undefined
+})
 
 // () -> Middleware
-function middleware() {
-  return function middleware(handler) {
-    return async function newHandler(request) {
-      return cookieResponse(await handler(cookieRequest(request)));
+function middleware () {
+  return function middleware (handler) {
+    return async function newHandler (request) {
+      return cookieResponse(await handler(cookieRequest(request)))
     }
   }
 }
 
-////////////////////////////////////////////////////////////
+// =========================================================
 
 // Parses cookie header into request.cookies Immutable.Map
 //
 // Request -> Request
-function cookieRequest(request) {
+function cookieRequest (request) {
   // Map of cookie key->vals
-  const parsed = cookie.parse(request.getHeader('cookie') || '');
-  const cookies = new Immutable.Map(parsed);
-  return request.setIn(['state', 'cookies'], cookies);
+  const parsed = cookie.parse(request.getHeader('cookie') || '')
+  const cookies = new Immutable.Map(parsed)
+  return request.setIn(['state', 'cookies'], cookies)
 }
 
 // Converts response.cookies Immutable.Map into Set-Cookie response headers.
 // Deletes the .cookies key when done.
 //
-// NOTE: Since response can set multiple Set-Cookie headers, 
+// NOTE: Since response can set multiple Set-Cookie headers,
 //       response.headers['set-cookie'] is an array [[k, v], [k, v]]
 // TODO: Handle the case where Set-Cookie header already exists but
 //       it's not an Immutable.List. This should be abstracted away.
 //
 // Response -> Response
-function cookieResponse(response) {
+function cookieResponse (response) {
   // Bail if there are no cookies to set
-  const cookies = response.getIn(['state', 'cookies']);
-  if (!cookies) return response.remove('cookies');
-  if (cookies.size === 0) return response.remove('cookies');
+  const cookies = response.getIn(['state', 'cookies'])
+  if (!cookies) return response.remove('cookies')
+  if (cookies.size === 0) return response.remove('cookies')
 
   return response.updateIn(['headers', 'set-cookie'], v => {
     return (v || new Immutable.List()).withMutations(list => {
       for (let [k, obj] of response.getIn(['state', 'cookies'])) {
         // obj is at least { value: ... }
-        const cookieValue = obj.get('value');
-        const cookieOpts = obj.remove('value').toJS();
-        list.push(cookie.serialize(k, cookieValue, cookieOpts));
+        const cookieValue = obj.get('value')
+        const cookieOpts = obj.remove('value').toJS()
+        list.push(cookie.serialize(k, cookieValue, cookieOpts))
       }
-    });
-  }).remove('cookies');
+    })
+  }).remove('cookies')
 }
 
+// PUBLIC API
 
-////////////////////////////////////////////////////////////
-// Public API
-////////////////////////////////////////////////////////////
-
-export default { get, set, expire, has, middleware };
+export default { get, set, expire, has, middleware }

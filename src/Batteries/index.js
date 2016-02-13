@@ -1,16 +1,16 @@
 
 // 1st
-import logger from './logger';
-import serveStatic from './serve-static';
-import jsonBodyParser from './json-body-parser';
-import formBodyParser from './form-body-parser';
-import notModified from './not-modified';
-import Cookie from './cookies';
-import Flash from './flash';
-import router from './router';
-import nunjucks from './nunjucks';
-import removeTrailingSlash from './remove-trailing-slash';
-import negotiate from './negotiate';
+import logger from './logger'
+import serveStatic from './serve-static'
+import jsonBodyParser from './json-body-parser'
+import formBodyParser from './form-body-parser'
+import notModified from './not-modified'
+import Cookie from './cookies'
+import Flash from './flash'
+import router from './router'
+import nunjucks from './nunjucks'
+import removeTrailingSlash from './remove-trailing-slash'
+import negotiate from './negotiate'
 
 //
 // "Batteries included"
@@ -19,9 +19,9 @@ import negotiate from './negotiate';
 // They are untested, but can serve as a demonstration.
 //
 
-export { 
+export {
   logger,
-  serveStatic, 
+  serveStatic,
   jsonBodyParser,
   formBodyParser,
   notModified,
@@ -31,8 +31,7 @@ export {
   nunjucks,
   removeTrailingSlash,
   negotiate
-};
-
+}
 
 // After building the Cookie module, the best convention might be:
 //

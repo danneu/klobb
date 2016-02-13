@@ -1,7 +1,4 @@
 
-// 3rd
-import statuses from 'statuses';
-
 //
 // Common utility belt functions available across modules
 //
@@ -15,14 +12,14 @@ import statuses from 'statuses';
 //     createError(500, 'Custom message')
 //     createError(500, 'Custom message', err)
 //
-export function createError(status, message, orig) {
+export function createError (status, message, orig) {
   // Handle createError(500, err)
   if (message instanceof Error) {
-    orig = message;
-    message = undefined;
+    orig = message
+    message = undefined
   }
-  const err = new Error(message);
-  err.status = status;
-  err.originalError = orig;
-  return err;
+  const err = new Error(message)
+  err.status = status
+  err.originalError = orig
+  return err
 }

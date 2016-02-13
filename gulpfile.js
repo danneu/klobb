@@ -1,18 +1,19 @@
-const gulp = require('gulp');
-const del = require('del');
-const ext = require('gulp-ext');
-const babel = require('gulp-babel');
-const cache = require('gulp-cached');
-const help = require('gulp-task-listing');
-const ava = require('gulp-ava');
+const gulp = require('gulp')
+const del = require('del')
+const ext = require('gulp-ext')
+const babel = require('gulp-babel')
+const cache = require('gulp-cached')
+const help = require('gulp-task-listing')
+const eslint = require('gulp-eslint')
+const ava = require('gulp-ava')
 
-gulp.task('help', help);
+gulp.task('help', help)
 
 gulp.task('compile', [
   'compile-bin',
   'compile-test',
   'compile-src'
-]);
+])
 
 gulp.task('compile-bin', function () {
   return gulp.src('bin/*')
@@ -20,8 +21,8 @@ gulp.task('compile-bin', function () {
     presets: ['es2015']
   }))
   .pipe(ext.crop())
-  .pipe(gulp.dest('build/bin'));
-});
+  .pipe(gulp.dest('build/bin'))
+})
 
 gulp.task('compile-test', function () {
   return gulp.src('test/*.js')
@@ -32,11 +33,11 @@ gulp.task('compile-test', function () {
       'transform-runtime',
       'syntax-async-functions',
       'transform-async-to-generator',
-      'transform-object-rest-spread',
+      'transform-object-rest-spread'
     ]
   }))
-  .pipe(gulp.dest('build/test'));
-});
+  .pipe(gulp.dest('build/test'))
+})
 
 gulp.task('compile-src', function () {
   return gulp.src('src/**/*.js')
@@ -47,19 +48,31 @@ gulp.task('compile-src', function () {
       'transform-runtime',
       'syntax-async-functions',
       'transform-async-to-generator',
-      'transform-object-rest-spread',
+      'transform-object-rest-spread'
     ]
   }))
-  .pipe(gulp.dest('build/lib'));
-});
+  .pipe(gulp.dest('build/lib'))
+})
 
 gulp.task('test', ['compile'], function () {
   return gulp.src('build/test/*.js')
-  .pipe(ava());
-});
+  .pipe(ava())
+})
+
+gulp.task('lint', function () {
+  return gulp.src([
+    'gulpfile.js',
+    'test/*.js',
+    'src/**/*.js',
+    'bin/*'
+  ])
+  .pipe(eslint())
+  .pipe(eslint.format())
+  .pipe(eslint.failAfterError())
+})
 
 gulp.task('clean', function () {
-  return del(['build']);
-});
+  return del(['build'])
+})
 
-gulp.task('default', ['compile', 'test']);
+gulp.task('default', ['compile', 'test'])
