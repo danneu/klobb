@@ -46,8 +46,8 @@ function.
 ``` javascript
 import { Response } from 'klobb';
 
-export default async function(request) {
-  return Response.ok('Hello, world!');
+export default async function (request) {
+  return Response.ok('Hello, world!')
 }
 ```
 
@@ -104,25 +104,25 @@ Logging is a classic demonstration of the middleware abstraction.
 // server.js
 import { Response, compose } from 'klobb'
 
-function logger() {
-  return function middleware(handler) {
-    return async function newHandler(request) {
-      console.log(`--> ${request.method} ${request.url}`);
-      const start = Date.now();
-      const response = await handler(request);
-      console.log(`<-- ${response.status} - ${Date.now() - start} ms`);
-      return response;
+function logger () {
+  return function middleware (handler) {
+    return async function newHandler (request) {
+      console.log(`--> ${request.method} ${request.url}`)
+      const start = Date.now()
+      const response = await handler(request)
+      console.log(`<-- ${response.status} - ${Date.now() - start} ms`)
+      return response
     }
   }
 }
 
-const middleware = logger();
+const middleware = logger()
 
-const handler = async function(request) {
-  return Response.ok('Hello world');
+const handler = async function (request) {
+  return Response.ok('Hello world')
 }
 
-export default middleware(handler);
+export default middleware(handler)
 ```
 
 ### Batteries Included
@@ -131,8 +131,8 @@ klobb also comes with a `Batteries` module that implements (untested)
 common and demonstratively useful middleware.
 
 ``` javascript
-import { Response, Batteries, compose } from 'klobb';
-const Cookie = Batteries.Cookie;
+import { Response, Batteries, compose } from 'klobb'
+const Cookie = Batteries.Cookie
 
 const middleware = compose(
   Batteries.logger(),
@@ -141,19 +141,19 @@ const middleware = compose(
   Batteries.jsonBodyParser(),
   Batteries.Cookie.middleware(),
   Batteries.Flash.middleware()
-);
+)
 
 // You update cookies by simply returning a response with the
 // cookies you want to send to the client
 
-async function handler(request) {
-  const views = (parseInt(Cookie.get('views', request), 10) || 0) + 1;
+async function handler (request) {
+  const views = (parseInt(Cookie.get('views', request), 10) || 0) + 1
 
   return Response.ok(`You have viewed this page ${views} time(s)`)
-    .tap(Cookie.set('views', views));
+    .tap(Cookie.set('views', views))
 }
 
-export default middleware(handler);
+export default middleware(handler)
 ```
 
 ### Routing
@@ -163,9 +163,9 @@ I cobbled together a router that takes a tree and outputs a handler function.
 Here's Reddits URL structure:
 
 ``` javascript
-import { Response, Batteries, compose } from 'klobb';
+import { Response, Batteries, compose } from 'klobb'
 
-const middleware = compose(...);
+const middleware = compose(...)
 
 const handler = Batteries.router({
   '/': {
@@ -176,7 +176,7 @@ const handler = Batteries.router({
       '/:subreddit': {
         middleware: [loadSubreddit()],
         GET: (request) => {
-          const subreddit = request.getIn(['state', 'params', 'subreddit']);
+          const subreddit = request.getIn(['state', 'params', 'subreddit'])
           return Response.ok(`viewing subreddit ${subreddit}`)
         }
       }
@@ -191,10 +191,9 @@ const handler = Batteries.router({
       }
     }
   }
-});
+})
 
-
-export default middleware(handler);
+export default middleware(handler)
 ```
 
 #### Wildcards (`/users/:id`) and params
@@ -223,13 +222,13 @@ const adminRoutes = {
       }
     }
   }
-};
+}
 
 const authenticationRoutes = {
   '/login': { GET: ..., POST: ... },
   '/logout': { GET: ..., DELETE: ... },
   '/register': { GET: ..., POST: ... }
-};
+}
 
 const handler = Batteries.router({
   '/': {
@@ -239,7 +238,7 @@ const handler = Batteries.router({
     // Or spread them in when they're flat
     ...authenticationRoutes
   }
-});
+})
 ```
 
 **Caveat:** The router is naive and doesn't do any sort of backtracking.
@@ -262,12 +261,12 @@ klobb comes with a wrapper for [Nunjucks][jux] in its Batteries module.
 It's just 28 lines of code.
 
 ``` javascript
-import { Batteries } from 'klobb';
+import { Batteries } from 'klobb'
 
 const render = Batteries.nunjucks('views', {
   ext: '.html',
   noCache: process.env.NODE_ENV === 'development'
-});
+})
 
 const handler = Batteries.router({
   '/': {
@@ -275,13 +274,13 @@ const handler = Batteries.router({
     '/:uname': {
       middleware: [ensureAuthorized()],
       GET: async (request) => {
-        const user = await db.getUser(request.getIn(['state', 'params', 'uname']));
-        if (!user) return Response.notFound();
-        return Response.ok(await render('show-user', { user: user }));
+        const user = await db.getUser(request.getIn(['state', 'params', 'uname']))
+        if (!user) return Response.notFound()
+        return Response.ok(await render('show-user', { user: user }))
       }
     }
   }
-});
+})
 ```
 
 The code above would expect `views/homepage.html` and `views/show-user.html`
@@ -298,11 +297,11 @@ For demonstration, I'll reimplement koa-skeleton's moderately
 advanced user-register validation.
 
 ``` javascript
-import { Batteries, Response, Middleware } from 'klobb';
-const Flash = Batteries.Flash;
-const { v, validateBody, ValidationError } = Batteries.Validate;
+import { Batteries, Response, Middleware } from 'klobb'
+const Flash = Batteries.Flash
+const { v, validateBody, ValidationError } = Batteries.Validate
 
-async function handleSignup(req) {
+async function handleSignup (req) {
   // Throws ValidationError if the following fails
 
   const vals = validateBody(req, {
@@ -316,13 +315,13 @@ async function handleSignup(req) {
         'Username must only contain a-z, 0-9, underscore (_), or hypen (-)'),
       v.match(/[a-z]/i,
         'Username must contain at least one letter (a-z)'),
-      v.checkNotPredMemo(memo => db.findUserByUname(memo.val), 'Username taken'),
+      v.checkNotPredMemo(memo => db.findUserByUname(memo.val), 'Username taken')
     ],
     password2: [
       v.tip('Password confirmation is required'),
       v.required(),
       v.isString(),
-      v.checkPred(s => s.length > 0),
+      v.checkPred(s => s.length > 0)
     ],
     password1: [
       v.tip('Password is required'),
@@ -331,38 +330,38 @@ async function handleSignup(req) {
       v.checkPred(s => s.length > 0),
       v.isLength(6, 100, 'Password must be 6-100 chars'),
       v.tip('Password must match confirmation'),
-      v.checkPredMemo(memo => memo.vals.password2 === memo.val),
+      v.checkPredMemo(memo => memo.vals.password2 === memo.val)
     ],
     email: [
       v.optional(),
       v.tip('Invalid email address'),
       v.trim(),
       v.isEmail(),
-      v.isLength(1, 140, 'Email is too long'),
+      v.isLength(1, 140, 'Email is too long')
     ]
-  });
+  })
 
   // If it succeeds, then we will make it down here and `vals`
   // will be set to an obj of our validated parameters.
 
-  const user = await db.insertUser(vals.uname, vals.password1, vals.email);
+  const user = await db.insertUser(vals.uname, vals.password1, vals.email)
 
   return Response.redirect(user.url)
-    .tap(Flash.set('message', ['success', 'Successfully registered. Welcome!']));
+    .tap(Flash.set('message', ['success', 'Successfully registered. Welcome!']))
 }
 
 const interceptValidationError = Middleware.make(async (handler, request) => {
   try {
-    return await handler(request);
+    return await handler(request)
   } catch(err) {
     if (err instanceof ValidationError) {
       return Response.redirectBack(request)
         .tap(Flash.set('message', ['dange', err.message || 'Validation error']))
-        .tap(Flash.set('progress', request.body));
+        .tap(Flash.set('progress', request.body))
     }
-    throw err;
+    throw err
   }
-});
+})
 
 const handler = Batteries.router({
   '/': {
@@ -371,7 +370,7 @@ const handler = Batteries.router({
       POST: handleCreateUser
     }
   }
-});
+})
 ```
 
 [koa-val]: https://github.com/danneu/koa-skeleton/blob/4d654c8963848d171e9b2ae3e0ef91721058d1e1/src/routes/authentication.js#L88-L115
@@ -388,9 +387,9 @@ an `Error` with those fields set:
 
 ``` javascript
 if (invalid) {
-  const err = new Error("I can't let you do that, Starfox.");
-  err.status = 400;
-  throw err;
+  const err = new Error("I can't let you do that, Starfox.")
+  err.status = 400
+  throw err
 }
 ```
 
@@ -400,11 +399,11 @@ Though klobb has a convenience function for throwing custom errors,
 mainly helpful in that it allows for one-liners:
 
 ``` javascript
-import { createError } from 'klobb';
+import { createError } from 'klobb'
 
 if (invalid) {
-  throw createError(400, 'My custom message');
-  throw createError(400);
+  throw createError(400, 'My custom message')
+  throw createError(400)
 }
 ```
 
@@ -430,20 +429,20 @@ own `try/catch` middleware which will get to handle errors before klobb.
 Example: Logging errors and then re-throwing them for klobb to handle:
 
 ``` javascript
-import { Middleware } from 'klobb';
+import { Middleware } from 'klobb'
 
 const logOnErrors = Middleware.make(async (handler, request) => {
   try {
-    return await handler(request);
+    return await handler(request)
   } catch(err) {
-    logError(err);
-    throw err;
+    logError(err)
+    throw err
   }
-});
+})
 
-const middleware = compose(logOnErrors(), serveStatic('public'), ...);
+const middleware = compose(logOnErrors(), serveStatic('public'), ...)
 
-export default middleware(handler);
+export default middleware(handler)
 ```
 
 Or you can just return a response so that klobb's error handling never even
@@ -452,22 +451,22 @@ catches any errors, effectively overriding klobb.
 Example: Custom error-handler that converts all errors into JSON responses:
 
 ``` javascript
-import { Middleware, Response } from 'klobb';
-import statuses from 'statuses'; // npm install --save statuses
+import { Middleware, Response } from 'klobb'
+import statuses from 'statuses' // npm install --save statuses
 
 const jsonErrors = Middleware.make(async (handler, request) => {
   try {
-    return await handler(request);
+    return await handler(request)
   } catch(err) {
-    const status = err.status || 500;
-    const message = err.message || statuses[status];
-    return new Response(status).json({ error: message });
+    const status = err.status || 500
+    const message = err.message || statuses[status]
+    return new Response(status).json({ error: message })
   }
-});
+})
 
-const middleware = compose(jsonErrors(), serveStatic('public'), ...);
+const middleware = compose(jsonErrors(), serveStatic('public'), ...)
 
-export default middleware(handler);
+export default middleware(handler)
 ```
 
 ### Storing State in the Request/Response
@@ -491,26 +490,26 @@ cookie to load the current user from the database and then attaches the user
 to the request so that downstream middleware and handlers can access it:
 
 ``` javascript
-import { Middleware, Batteries, compose } from 'klobb';
-const Cookie = Batteries.Cookie;
+import { Middleware, Batteries, compose } from 'klobb'
+const Cookie = Batteries.Cookie
 
 const loadCurrentUser = Middleware.make(async (handler, request) => {
-  const sessionId = Cookie.get('session_id', request);
-  if (!sessionId) return handler(request);
-  const currUser = await database.getUserBySessionId(sessionId);
-  if (!currUser) return handler(request);
-  return handler(request.setIn(['state', 'currUser'], currUser));
-});
+  const sessionId = Cookie.get('session_id', request)
+  if (!sessionId) return handler(request)
+  const currUser = await database.getUserBySessionId(sessionId)
+  if (!currUser) return handler(request)
+  return handler(request.setIn(['state', 'currUser'], currUser))
+})
 
 const handler = (request) => {
-  const currUser = request.getIn(['state', 'currUser']);
-  if (!currUser) return Response.ok('You are not logged in');
-  return Response.ok(`You are logged in as ${currUser.uname}`);
+  const currUser = request.getIn(['state', 'currUser'])
+  if (!currUser) return Response.ok('You are not logged in')
+  return Response.ok(`You are logged in as ${currUser.uname}`)
 };
 
-const middleware = compose(Cookie.middleware(), loadCurrentUser());
+const middleware = compose(Cookie.middleware(), loadCurrentUser())
 
-export default middleware(handler);
+export default middleware(handler)
 ```
 
 ### Composing Multiple Apps
@@ -519,10 +518,10 @@ Since a klobb app is just a function that takes a Request and returns
 a Response (i.e. a handler), it's trivial to compose multiple apps together.
 
 ``` javascript
-import { Batteries } from 'klobb';
-import app1 from './app1';
-import app2 from './app1';
-import app3 from './app1';
+import { Batteries } from 'klobb'
+import app1 from './app1'
+import app2 from './app2'
+import app3 from './app3'
 
 export default Batteries.router({
   '/': {
@@ -530,7 +529,7 @@ export default Batteries.router({
     '/app2': app2,
     '/app3': app3
   }
-});
+})
 ```
 
 ### Content Negotiation
@@ -551,7 +550,7 @@ const handler = Batteries.negotiate({
   'text/plain': () => Response.ok('Hello'),
   'text/html': () => Response.ok('<p>Hello</p>'),
   'application/json': () => Response.json({ message: 'Hello' })
-});
+})
 ```
 
 Or, even simpler:
@@ -561,7 +560,7 @@ const handler = Batteries.negotiate({
   text: () => Response.ok('Hello'),
   html: () => Response.ok('<p>Hello</p>'),
   json: () => Response.json({ message: 'Hello' })
-});
+})
 ```
 
 If you want to hook into the case where none of the branches match, then
@@ -575,10 +574,10 @@ const handler = Batteries.negotiate({
   text: () => ...,
   json: () => ...,
   default: request => {
-    console.log('Unhandled accept header: ${request.getHeader('accept')}');
-    return new Response(406);
+    console.log('Unhandled accept header: ${request.getHeader('accept')}')
+    return new Response(406)
   }
-});
+})
 ```
 
 Though be sure to respond with the appropriate 406 status code if you
@@ -634,23 +633,23 @@ directly in your middleware/handlers.
 Here's a basic handler:
 
 ``` javascript
-async function handler(req) {
-  return new Response(200, {}, 'Hello, world!');
+async function handler (request) {
+  return new Response(200, {}, 'Hello, world!')
 }
 ```
 
 And here are some conveniences functions for making responses:
 
 ``` javascript
-async function handler(req) {
-  return Response.make(200, {}, body);  // alternative to `new` constructor
-  return Response.ok(body);             // 200
-  return Response.notFound();           // 404
-  return Response.notModified();        // 304
-  return Response.json({ foo: 'bar' }); // 200, JSON encoded
-  return Response.redirect(url);        // 302 Temporary
-  return Response.redirect(url, 301);   // 301 Permanent
-  return Response.redirectBack();       // 302 Permanent to referrer || homepage
+async function handler (request) {
+  return Response.make(200, {}, body)  // alternative to `new` constructor
+  return Response.ok(body)             // 200
+  return Response.notFound()           // 404
+  return Response.notModified()        // 304
+  return Response.json({ foo: 'bar' }) // 200, JSON encoded
+  return Response.redirect(url)        // 302 Temporary
+  return Response.redirect(url, 301)   // 301 Permanent
+  return Response.redirectBack()       // 302 Permanent to referrer || homepage
 }
 ```
 
@@ -659,13 +658,13 @@ async function handler(req) {
 Middleware are functions that take and return handlers.
 
 ``` javascript
-function noop(handler) {
-  return newHandler(request) {
+function noop (handler) {
+  return newHandler (request) {
     // request is going downstream
-    const response = await handler(request);
+    const response = await handler(request)
     // response is coming upstream
-    return response;
-  };
+    return response
+  }
 }
 ```
 
@@ -675,18 +674,18 @@ Use `Middleware.compose` to compose middleware.
 
 ``` javascript
 // compose is re-exported from the root module for convenience
-import { compose } from 'klobb';
+import { compose } from 'klobb'
 
-const middleware = compose(mw1, mw2, mw3);
-export default middleware(handler);
+const middleware = compose(mw1, mw2, mw3)
+export default middleware(handler)
 ```
 
 `compose` returns a function that applies middleware from right to left
 to the handler argument:
 
 ``` javascript
-const middleware = compose(a, b, c)(handler);
-const middleware = a(b(c(handler)));
+const middleware = compose(a, b, c)(handler)
+const middleware = a(b(c(handler)))
 ```
 
 During a request, the above middleware execution order
@@ -697,9 +696,10 @@ can be visualized as this:
                |    |    +-----------------------------+    |    |
                |    |    |                             |    |    |
     request -> a -> b -> c -> (handler -> response) -> c -> b -> a -> response
-       ^                                                                 |
-       |                                                                 v
-     client                                                            client
+       ^       |    |    |                             |    |    |       |
+       |       |    |    +-----------------------------+    |    |       v
+     client    |    +---------------------------------------+    |     client
+               +-------------------------------------------------+
 
 That is, in `compose(a, b, c)`, middleware `a` touches the request first
 and the response last.
@@ -708,16 +708,16 @@ The benefit of using klobb's own `compose` function is that it wraps
 each middleware function to promote null responses into 404 responses.
 
 ``` javascript
-async function handler(request) {
-  return;  // will get promoted into a 404
+async function handler (request) {
+  return  // will get promoted into a 404
 }
 
 // e.g.
 
-import { Response } from 'klobb';
+import { Response } from 'klobb'
 
-async function handler(request) {
-  return Response.notFound();
+async function handler (request) {
+  return Response.notFound()
 }
 ```
 
@@ -732,13 +732,13 @@ Middleware function by passing it a function of signature
 
 ``` javascript
 const mw = Middleware.make(async (handler, req) => {
-  console.log('>>');
-  const res = await handler(req);
-  console.log('<<');
-  return res;
+  console.log('>>')
+  const res = await handler(req)
+  console.log('<<')
+  return res
 });
 
-const middleware = compose(mw(), mw(), mw());
+const middleware = compose(mw(), mw(), mw())
 ```
 
 As per [unnecessary?] middleware convention, you must still invoke
