@@ -14,6 +14,9 @@ const defaults = {
 };
 
 class Response extends Immutable.Record(defaults) {
+
+  // CONSTRUCTORS
+
   static make(status, headers, body) {
     return new Response(status, headers, body);
   }
@@ -31,8 +34,7 @@ class Response extends Immutable.Record(defaults) {
   }
 
   static json(obj) {
-    const body = JSON.stringify(obj, null, '  ');
-    return new Response(200, { 'content-type': 'application/json' }, body);
+    return new Response(200).json(obj);
   }
 
   static redirect(url, status) {
@@ -76,6 +78,8 @@ class Response extends Immutable.Record(defaults) {
 
     super(opts);
   }
+
+  // INSTANCE METHODS
 
   // Calculates final headers to be sent based on the state of the request
   //
@@ -121,6 +125,10 @@ class Response extends Immutable.Record(defaults) {
     return this.getIn(['headers', key.toLowerCase()]);
   }
 
+  setStatus(status) {
+    return this.set('status', status);
+  }
+
   // Use this function to update the body so that it can maintain the optional
   // fs.Stats object, which can be used for etag caching.
   //
@@ -130,9 +138,15 @@ class Response extends Immutable.Record(defaults) {
     return this.set('body', body);
   }
 
+  json(obj) {
+    const body = JSON.stringify(obj, null, '  ');
+    return this.setBody(body)
+      .setHeader('content-type', 'application/json');
+  }
+
   // Chaining convenience
   //
-  // Request.ok().tap(doSomething1).tap(doSomething2)
+  // Ex: Request.ok().tap(doSomething1).tap(doSomething2) => Request
   //
   // (Response -> Response)
   tap(f) {

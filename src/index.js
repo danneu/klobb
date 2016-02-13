@@ -2,6 +2,8 @@
 // Node
 import * as http from 'http';
 import assert from 'assert';
+// 3rd party
+import statuses from 'statuses';
 // 1st party
 import Request from './Request';
 import Response from './Response';
@@ -45,14 +47,11 @@ export function serve(handler, opts = {}) {
 }
 
 // Root handler wrapper that turns all uncaught errors into responses,
-// 500 if err.statusCode is not defined.
+// 500 if err.status is not defined.
 //
 // Error -> Response
-function onError({ status, message, stack }) {
+function onError({ status = 500, message, stack }) {
   console.error(stack);
-  if (status) {
-    return new Response(status, {}, DEV ? stack : message);
-  } else {
-    return new Response(500, {}, DEV ? stack : 'Internal Server Error');
-  }
+  message = message || statuses[status];
+  return new Response(status, {}, DEV ? stack : message);
 }

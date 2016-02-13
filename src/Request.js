@@ -4,6 +4,7 @@ import nodeUrl from 'url';
 // 3rd 
 import Immutable from 'immutable';
 import typeIs from 'type-is';
+import accepts from 'accepts';
 
 const defaults = {
   url: '',
@@ -82,6 +83,13 @@ class Request extends Immutable.Record(defaults) {
   // ...String -> String || falsey
   typeIs(...types) {
     return typeIs(this.nreq, types);
+  }
+
+  // CONTENT NEGOTIATION
+
+  accepts(...types) {
+    const accept = accepts(this.nreq);
+    return accept.type(types);
   }
 }
 

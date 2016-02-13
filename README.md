@@ -364,7 +364,6 @@ const interceptValidationError = Middleware.make(async (handler, request) => {
   }
 });
 
-
 const handler = Batteries.router({
   '/': {
     '/users': {
@@ -376,6 +375,212 @@ const handler = Batteries.router({
 ```
 
 [koa-val]: https://github.com/danneu/koa-skeleton/blob/4d654c8963848d171e9b2ae3e0ef91721058d1e1/src/routes/authentication.js#L88-L115
+
+### Error Handling
+
+klobb wraps your handler with its own top-level `try/catch` middleware 
+that turns any uncaught `Error` object into a response.
+
+By default, it returns a 500 response with the body 'Internal Server Error'.
+
+If you want to throw a custom status code and message, then just throw
+an `Error` with those fields set:
+
+``` javascript
+if (invalid) {
+  const err = new Error("I can't let you do that, Starfox.");
+  err.status = 400;
+  throw err;
+}
+```
+
+#### `createError` Helper
+
+Though klobb has a convenience function for throwing custom errors,
+mainly helpful in that it allows for one-liners:
+
+``` javascript
+import { createError } from 'klobb';
+
+if (invalid) {
+  throw createError(400, 'My custom message');
+  throw createError(400);
+}
+```
+
+If an error has no `err.message` set, klobb sets the response body to the
+standard HTTP description for the status code:
+
+``` javascript
+import { createError } from 'klobb';
+
+throw new Error()                => 500 'Internal Server Error'
+throw new Error('Uh oh!')        => 500 'Uh oh!'
+throw createError(500)           => 500 'Internal Server Error'
+throw createError(500, 'Uh oh!') => 500 'Uh oh!'
+throw createError(503)           => 503 'Service Unavailable'
+throw createError(413)           => 400 'Payload Too Large'
+```
+
+#### Custom Error Handling
+
+If you want to handle uncaught errors yourself, just wrap your handler in your
+own `try/catch` middleware which will get to handle errors before klobb.
+
+Example: Logging errors and then re-throwing them for klobb to handle:
+
+``` javascript
+import { Middleware } from 'klobb';
+
+const logOnErrors = Middleware.make(async (handler, request) => {
+  try {
+    return await handler(request);
+  } catch(err) {
+    logError(err);
+    throw err;
+  }
+});
+
+const middleware = compose(logOnErrors(), serveStatic('public'), ...);
+
+export default middleware(handler);
+```
+
+Or you can just return a response so that klobb's error handling never even
+catches any errors, effectively overriding klobb.
+
+Example: Custom error-handler that converts all errors into JSON responses:
+
+``` javascript
+import { Middleware, Response } from 'klobb';
+import statuses from 'statuses'; // npm install --save statuses
+
+const jsonErrors = Middleware.make(async (handler, request) => {
+  try {
+    return await handler(request);
+  } catch(err) {
+    const status = err.status || 500;
+    const message = err.message || statuses[status];
+    return Response.json({ error: message }).setStatus(status);
+  }
+});
+
+const middleware = compose(jsonErrors(), serveStatic('public'), ...);
+
+export default middleware(handler);
+```
+
+### Storing State in the Request/Response
+
+klobb's Request and Response objects are [Immutable.js Records][records].
+
+[records]: https://facebook.github.io/immutable-js/docs/#/Record
+
+This basically means that their core keys cannot be removed, and arbitrary
+keys cannot be added.
+
+Instead, each Request and Response has a `.state` field which is an
+[Immutable.js Map][map] that can be arbitrarily modified. Any extensions to
+a Request or Response should be stored in the state map.
+
+For example, here's an example of common middleware that uses the "session_id"
+cookie to load the current user from the database and then attaches the user
+to the request so that downstream middleware and handlers can access it:
+
+``` javascript
+import { Middleware, Batteries, compose } from 'klobb';
+const Cookie = Batteries.Cookie;
+
+const loadCurrentUser = Middleware.make(async (handler, request) => {
+  const sessionId = Cookie.get('session_id', request);
+  if (!sessionId) return handler(request);
+  const currUser = await database.getUserBySessionId(sessionId);
+  if (!currUser) return handler(request);
+  return handler(request.setIn(['state', 'currUser'], currUser));
+});
+
+const handler = (request) => {
+  const currUser = request.getIn(['state', 'currUser']);
+  if (!currUser) return Response.ok('You are not logged in');
+  return Response.ok(`You are logged in as ${currUser.uname}`);
+};
+
+const middleware = compose(Cookie.middleware(), loadCurrentUser());
+
+export default middleware(handler);
+```
+
+### Composing Multiple Apps
+
+Since a klobb app is just a function that takes a Request and returns
+a Response (i.e. a handler), it's trivial to compose multiple apps together.
+
+``` javascript
+import { Batteries } from 'klobb';
+import app1 from './app1';
+import app2 from './app1';
+import app3 from './app1';
+
+export default Batteries.router({
+  '/': {
+    '/app1': app1,
+    '/app2': app2,
+    '/app3': app3
+  }
+});
+```
+
+### Content Negotiation
+
+This abstraction was inspired by Express' [res.format][format].
+
+If you want to respond differently based on the request's `Accept` header,
+then `Batteries.negotiate` takes a mapping of accept headers -> handlers and
+returns a new handler.
+
+It matches based on `Request#accepts(...types)`.
+
+If none of the branches match, then the negotiate handler returns a
+"406 Not Acceptable" response.
+
+``` javascript
+const handler = Batteries.negotiate({
+  'text/plain': () => Response.ok('Hello'),
+  'text/html': () => Response.ok('<p>Hello</p>'),
+  'application/json': () => Response.json({ message: 'Hello' })
+});
+```
+
+Or, even simpler:
+
+``` javascript
+const handler = Batteries.negotiate({
+  text: () => return Response.ok('Hello'),
+  html: () => return Response.ok('<p>Hello</p>'),
+  json: () => return Response.json({ message: 'Hello' })
+});
+```
+
+If you want to hook into the case where none of the branches match, then
+you can either wrap the final handle in middleware that checks if
+`response.status === 406`.
+
+Or you can provide a `default` branch:
+
+``` javascript
+const handler = Batteries.negotiate({
+  text: () => ...,
+  json: () => ...,
+  default: request => {
+    console.log('Unhandled accept header: ${request.getHeader('accept')}');
+    return new Response(406);
+  }
+});
+```
+
+Though be sure to respond with the appropriate 406 status code.
+
+[format]: http://expressjs.com/en/4x/api.html#res.format
 
 ## Concepts
 
@@ -438,9 +643,10 @@ async function handler(req) {
   return Response.ok(body);             // 200
   return Response.notFound();           // 404
   return Response.notModified();        // 304
-  return Response.json({ foo: 'bar' }); // JSON encoded
+  return Response.json({ foo: 'bar' }); // 200, JSON encoded
   return Response.redirect(url);        // 302 Temporary
   return Response.redirect(url, 301);   // 301 Permanent
+  return Response.redirectBack();       // 302 Permanent to referrer || homepage
 }
 ```
 

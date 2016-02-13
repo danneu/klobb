@@ -10,6 +10,7 @@ import Flash from './flash';
 import router from './router';
 import nunjucks from './nunjucks';
 import removeTrailingSlash from './remove-trailing-slash';
+import negotiate from './negotiate';
 
 //
 // "Batteries included"
@@ -29,6 +30,7 @@ export {
   router,
   nunjucks,
   removeTrailingSlash,
+  negotiate
 };
 
 

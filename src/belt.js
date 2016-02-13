@@ -21,7 +21,7 @@ export function createError(status, message, orig) {
     orig = message;
     message = undefined;
   }
-  const err = new Error(message || statuses[status]);
+  const err = new Error(message);
   err.status = status;
   err.originalError = orig;
   return err;
