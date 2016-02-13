@@ -477,11 +477,14 @@ klobb's Request and Response objects are [Immutable.js Records][records].
 [records]: https://facebook.github.io/immutable-js/docs/#/Record
 
 This basically means that their core keys cannot be removed, and arbitrary
-keys cannot be added.
+keys cannot be added. But they have most of the instance methods of 
+[Immutable.js Maps][maps].
 
 Instead, each Request and Response has a `.state` field which is an
 [Immutable.js Map][maps] that can be arbitrarily modified. Any extensions to
 a Request or Response should be stored in the state map.
+
+#### Example: Loading the current user
 
 For example, here's an example of common middleware that uses the "session_id"
 cookie to load the current user from the database and then attaches the user
