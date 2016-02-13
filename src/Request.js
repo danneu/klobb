@@ -5,6 +5,7 @@ import nodeUrl from 'url'
 import Immutable from 'immutable'
 import typeIs from 'type-is'
 import accepts from 'accepts'
+import R from 'ramda'
 
 const defaults = {
   url: '',
@@ -45,10 +46,8 @@ class Request extends Immutable.Record(defaults) {
   }
 
   constructor (opts = {}) {
-    if (opts.headers !== undefined && !Immutable.Map.isMap(opts.headers)) {
-      opts.headers = new Immutable.Map(opts.headers)
-    }
-    super(opts)
+    opts.headers = new Immutable.Map(opts.headers)
+    super(R.reject(R.isNil, opts))
   }
 
   // Parses querystring on demand

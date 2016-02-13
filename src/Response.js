@@ -110,6 +110,7 @@ class Response extends Immutable.Record(defaults) {
   }
 
   // Does not set the header if val is undefined/null
+  //
   // (String, any) -> Response
   setHeader (key, val) {
     if (R.isNil(key)) return this
@@ -118,9 +119,32 @@ class Response extends Immutable.Record(defaults) {
 
   // Does not set header if val is undefined/null
   // Ex: setHeaders({ 'content-type': 'this', 'x-header': 'that' })
+  //
   // Object -> Response
   setHeaders (obj) {
     return this.mergeDeep({ headers: R.reject(R.isNil, obj) })
+  }
+
+  // Ex
+  // appendHeader('set-cookie', 'val')
+  // appendHeader('set-cookie', ['val1', 'val2'])
+  //
+  // (String, String) -> Response
+  // (String, [String]) -> Response
+  appendHeader (key, vals) {
+    if (typeof vals === 'string') {
+      vals = R.of(vals)
+    }
+    return this.updateIn(['headers', key], (current) => {
+      current = typeof current === 'string'
+        ? [current]
+        : (R.isNil(current) ? [] : current)
+      return (Immutable.List(current)).withMutations((list) => {
+        for (const v of R.reject(R.isNil, vals)) {
+          list.push(v)
+        }
+      })
+    })
   }
 
   // String -> Maybe String
@@ -134,6 +158,7 @@ class Response extends Immutable.Record(defaults) {
 
   // Use this function to update the body so that it can maintain the optional
   // fs.Stats object, which can be used for etag caching.
+  //
   // (Stream, fs.StatsObject) -> Response
   setBody (body, stats) {
     if (stats) body._stats = stats // lame
@@ -148,6 +173,7 @@ class Response extends Immutable.Record(defaults) {
 
   // Chaining convenience
   // Ex: Request.ok().tap(doSomething1).tap(doSomething2) => Request
+  //
   // (Response -> Response)
   tap (f) {
     return f(this)
