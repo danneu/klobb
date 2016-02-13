@@ -82,7 +82,6 @@ class Response extends Immutable.Record(defaults) {
   // INSTANCE METHODS
 
   // Calculates final headers to be sent based on the state of the request
-  //
   // Returns new request that's ready to be used with Response.send.
   finalize () {
     // Don't use `this` past this point. We're accumulating
@@ -109,16 +108,24 @@ class Response extends Immutable.Record(defaults) {
     }
 
     return finalResponse
-      .setHeader('content-length', length)
-      .setHeader('content-type', type)
+      .setHeaders({
+        'content-length': length,
+        'content-type': type
+      })
   }
 
   // Does not set the header if val is undefined/null
-  //
   // (String, any) -> Response
   setHeader (key, val) {
-    if (val === undefined || val === null) return this
+    if (R.isNil(key)) return this
     return this.setIn(['headers', key.toLowerCase()], val)
+  }
+
+  // Does not set header if val is undefined/null
+  // Ex: setHeaders({ 'content-type': 'this', 'x-header': 'that' })
+  // Object -> Response
+  setHeaders (obj) {
+    return this.mergeDeep({ headers: R.reject(R.isNil, obj) })
   }
 
   // String -> Maybe String
@@ -132,7 +139,6 @@ class Response extends Immutable.Record(defaults) {
 
   // Use this function to update the body so that it can maintain the optional
   // fs.Stats object, which can be used for etag caching.
-  //
   // (Stream, fs.StatsObject) -> Response
   setBody (body, stats) {
     if (stats) body._stats = stats // lame
@@ -146,9 +152,7 @@ class Response extends Immutable.Record(defaults) {
   }
 
   // Chaining convenience
-  //
   // Ex: Request.ok().tap(doSomething1).tap(doSomething2) => Request
-  //
   // (Response -> Response)
   tap (f) {
     return f(this)
