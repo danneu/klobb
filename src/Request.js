@@ -85,15 +85,16 @@ class Request extends Immutable.Record(defaults) {
   //
   // Ex:
   //
-  //     if (request.typeIs('image/*')) {
+  //     if (request.checkType('image/*')) {
   //       // process
   //     } else {
   //       throw createError(415, 'images only!');
   //     }
   //
-  // ...String -> String || falsey
-  typeIs (...types) {
-    return typeIs(this.nreq, types)
+  // ...String -> String || false
+  checkType (...types) {
+    if (R.head(types) === undefined) return false
+    return typeIs(this.nreq, R.flatten(types)) || false
   }
 
   // Returns content-type without the charset or an empty string

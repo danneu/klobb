@@ -26,7 +26,7 @@ export default function formBodyParser (
       }
 
       // Short-circuit if it doesn't have a content-type we care about
-      if (!req.typeIs(...defaultTypes)) {
+      if (!req.checkType(...defaultTypes)) {
         if (!force) return handler(req)
         throw createError(415)
       }

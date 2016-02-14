@@ -43,7 +43,7 @@ export default function jsonBodyParser (
       }
 
       // Short-circuit if it's not a JSON request
-      if (!request.typeIs(...defaultTypes)) {
+      if (!request.checkType(...defaultTypes)) {
         if (!force) return handler(request)
         throw createError(415)
       }
