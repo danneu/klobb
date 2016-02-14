@@ -8,6 +8,7 @@ import R from 'ramda'
 import mime from 'mime-types'
 // 1st
 import Request from './Request'
+import * as belt from './belt'
 
 const defaults = {
   status: 200,
@@ -40,19 +41,55 @@ class Response extends Immutable.Record(defaults) {
     return new Response(200).json(obj)
   }
 
-  static redirect (url, status = 302) {
+  // redirect('/')
+  // redirect('/', request)
+  // redirect('/', 301)
+  // redirect('/', 301, request)
+  //
+  // url is required
+  // status is optional
+  // request is optional, but lets function read the accept header
+  static redirect (url, status, request) {
+    if (status instanceof Request) {
+      request = status
+      status = undefined
+    }
+    status = status || 302
+
     assert(typeof url === 'string')
     assert(Number.isInteger(status))
 
-    return new Response(status, { 'location': url })
+    let body, type
+
+    if (request && request.accepts('html')) {
+      const escaped = belt.escapeHtml(url)
+      type = 'text/html'
+      body = `Redirecting to <a href="${escaped}">${escaped}</a>`
+    } else {
+      type = 'text/plain'
+      body = `Redirecting to ${url}`
+    }
+
+    return new Response(status, {
+      'location': url,
+      'content-type': type
+    }, body)
   }
 
-  static redirectBack (request, altUrl = '/') {
+  // redirectBack(request)
+  // redirectBack('/alt', request)
+  static redirectBack (altUrl, request) {
+    if (altUrl instanceof Request) {
+      request = altUrl
+      altUrl = undefined
+    }
+    altUrl = altUrl || '/'
+
     assert(request instanceof Request)
     assert(typeof altUrl === 'string')
 
     const url = request.getHeader('referrer') || altUrl
-    return new Response(302, { 'location': url })
+    return this.redirect(url, 302, request)
   }
 
   // Map the state of a klobb Response object onto the
@@ -91,14 +128,16 @@ class Response extends Immutable.Record(defaults) {
   // Calculates final headers to be sent based on the state of the request
   // Returns new request that's ready to be used with Response.send.
   finalize () {
-    // Determine body
+    // DETERMINE BODY
+
     // Strip body for non-content status codes
     let body = this.body
     if (R.contains(this.status, [204, 205, 304])) {
       body = ''
     }
 
-    // Determine content-length
+    // DETERMINE CONTENT-LENGTH
+
     let length
     if (typeof body === 'string') {
       length = Buffer.byteLength(body)
@@ -108,16 +147,24 @@ class Response extends Immutable.Record(defaults) {
       length = this.getHeader('content-length')
     }
 
-    // Determine full content-type
+    // DETERMINE CONTENT-TYPE
+
     // Ex: mime.contentType('text/plain') -> 'text/plain; chartset=utf-8'
-    let type
+    let type = this.getHeader('content-type')
     if (R.contains(this.status, [204, 205, 304])) {
       type = undefined
-    } else if (typeof this.getHeader('content-type') === 'string') {
-      // mime.contentType returns false if it can't discern,
-      // so turn it into undefined
-      type = mime.contentType(this.getHeader('content-type')) || undefined
+    } else if (!type && typeof body === 'string') {
+      type = /^\s*</.test(body) ? 'text/html' : 'text/plain'
+    } else if (!type && Buffer.isBuffer(body)) {
+      type = 'application/octet-stream'
+    } else if (!type && body instanceof Stream) {
+      type = 'application/octet-stream'
     }
+
+    // Finally, add charset if applicable
+    type = mime.contentType(type) || undefined
+
+    // TRANSFER-ENCODING
 
     let transferEncoding = this.getHeader('transfer-encoding')
     if (R.contains(this.status, [204, 205, 304])) {

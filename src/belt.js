@@ -23,3 +23,11 @@ export function createError (status, message, orig) {
   err.originalError = orig
   return err
 }
+
+export function escapeHtml (html) {
+  return String(html)
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+}
