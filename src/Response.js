@@ -1,10 +1,13 @@
 
 // Node
 import Stream from 'stream'
+import assert from 'assert'
 // 3rd
 import Immutable from 'immutable'
 import R from 'ramda'
 import mime from 'mime-types'
+// 1st
+import Request from './Request'
 
 const defaults = {
   status: 200,
@@ -37,12 +40,17 @@ class Response extends Immutable.Record(defaults) {
     return new Response(200).json(obj)
   }
 
-  static redirect (url, status) {
-    status = status || 302
+  static redirect (url, status = 302) {
+    assert(typeof url === 'string')
+    assert(Number.isInteger(status))
+
     return new Response(status, { 'location': url })
   }
 
   static redirectBack (request, altUrl = '/') {
+    assert(request instanceof Request)
+    assert(typeof altUrl === 'string')
+
     const url = request.getHeader('referrer') || altUrl
     return new Response(302, { 'location': url })
   }
@@ -83,12 +91,19 @@ class Response extends Immutable.Record(defaults) {
   // Calculates final headers to be sent based on the state of the request
   // Returns new request that's ready to be used with Response.send.
   finalize () {
+    // Determine body
+    // Strip body for non-content status codes
+    let body = this.body
+    if (R.contains(this.status, [204, 205, 304])) {
+      body = ''
+    }
+
     // Determine content-length
     let length
-    if (typeof this.body === 'string') {
-      length = Buffer.byteLength(this.body)
-    } else if (Buffer.isBuffer(this.body)) {
-      length = Buffer.byteLength(this.body)
+    if (typeof body === 'string') {
+      length = Buffer.byteLength(body)
+    } else if (Buffer.isBuffer(body)) {
+      length = Buffer.byteLength(body)
     } else {
       length = this.getHeader('content-length')
     }
@@ -96,33 +111,54 @@ class Response extends Immutable.Record(defaults) {
     // Determine full content-type
     // Ex: mime.contentType('text/plain') -> 'text/plain; chartset=utf-8'
     let type
-    if (typeof this.getHeader('content-type') === 'string') {
+    if (R.contains(this.status, [204, 205, 304])) {
+      type = undefined
+    } else if (typeof this.getHeader('content-type') === 'string') {
       // mime.contentType returns false if it can't discern,
       // so turn it into undefined
       type = mime.contentType(this.getHeader('content-type')) || undefined
     }
 
+    let transferEncoding = this.getHeader('transfer-encoding')
+    if (R.contains(this.status, [204, 205, 304])) {
+      transferEncoding = undefined
+    }
+
     return this
+      .setBody(body)
       .setHeaders({
         'content-length': length,
-        'content-type': type
+        'content-type': type,
+        'transfer-encoding': transferEncoding
       })
   }
 
-  // Does not set the header if val is undefined/null
+  // If val is nil, then the header gets removed
+  // Coerces val to string
   //
   // (String, any) -> Response
   setHeader (key, val) {
-    if (R.isNil(key)) return this
-    return this.setIn(['headers', key.toLowerCase()], val)
+    assert(typeof key === 'string')
+
+    key = key.toLowerCase()
+    if (R.isNil(val)) return this.deleteIn(['headers', key])
+    if (val instanceof Array) {
+      return this.setIn(['headers', key], val.map(String))
+    }
+    return this.setIn(['headers', key], String(val))
   }
 
-  // Does not set header if val is undefined/null
   // Ex: setHeaders({ 'content-type': 'this', 'x-header': 'that' })
   //
   // Object -> Response
   setHeaders (obj) {
-    return this.mergeDeep({ headers: R.reject(R.isNil, obj) })
+    // coerce vals to strings unless they are nil
+    obj = R.map(v => {
+      if (R.isNil(v)) return v
+      if (v instanceof Array) return v.map(String)
+      return String(v)
+    }, obj)
+    return this.mergeDeep({ headers: obj })
   }
 
   // Ex
@@ -149,10 +185,12 @@ class Response extends Immutable.Record(defaults) {
 
   // String -> Maybe String
   getHeader (key) {
+    assert(typeof key === 'string')
     return this.getIn(['headers', key.toLowerCase()])
   }
 
   setStatus (status) {
+    assert(Number.isInteger(status))
     return this.set('status', status)
   }
 
@@ -176,6 +214,7 @@ class Response extends Immutable.Record(defaults) {
   //
   // (Response -> Response)
   tap (f) {
+    assert(typeof f === 'function')
     return f(this)
   }
 }
