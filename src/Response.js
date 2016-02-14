@@ -6,6 +6,7 @@ import assert from 'assert'
 import Immutable from 'immutable'
 import R from 'ramda'
 import mime from 'mime-types'
+import statuses from 'statuses'
 // 1st
 import Request from './Request'
 import * as belt from './belt'
@@ -55,6 +56,9 @@ class Response extends Immutable.Record(defaults) {
       status = undefined
     }
     status = status || 302
+
+    // Ensure status is valid redirect
+    if (!statuses.redirect[status]) status = 302
 
     assert(typeof url === 'string')
     assert(Number.isInteger(status))
@@ -130,9 +134,9 @@ class Response extends Immutable.Record(defaults) {
   finalize () {
     // DETERMINE BODY
 
-    // Strip body for non-content status codes
+    // Strip body for non-content status codes (204, 205, 304)
     let body = this.body
-    if (R.contains(this.status, [204, 205, 304])) {
+    if (statuses.empty[this.status]) {
       body = ''
     }
 
@@ -151,7 +155,7 @@ class Response extends Immutable.Record(defaults) {
 
     // Ex: mime.contentType('text/plain') -> 'text/plain; chartset=utf-8'
     let type = this.getHeader('content-type')
-    if (R.contains(this.status, [204, 205, 304])) {
+    if (statuses.empty[this.status]) {
       type = undefined
     } else if (!type && typeof body === 'string') {
       type = /^\s*</.test(body) ? 'text/html' : 'text/plain'
@@ -167,7 +171,7 @@ class Response extends Immutable.Record(defaults) {
     // TRANSFER-ENCODING
 
     let transferEncoding = this.getHeader('transfer-encoding')
-    if (R.contains(this.status, [204, 205, 304])) {
+    if (statuses.empty[this.status]) {
       transferEncoding = undefined
     }
 

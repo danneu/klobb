@@ -57,3 +57,10 @@ test('responds with text/plain if html is not accepted', t => {
   const response = Response.redirect('/foo', 301, request)
   t.same(response.getHeader('content-type'), 'text/plain')
 })
+
+// INVALID STATUS
+
+test('sets status to 302 if given status is invalid redirect', t => {
+  const response = Response.redirect('/foo', 304)
+  t.same(response.status, 302)
+})
