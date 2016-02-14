@@ -27,17 +27,6 @@ export function compose (...mws) {
   }
 }
 
-// BUILT-IN MIDDLEWARE
-
-// Middleware that does nothing
-//
-// () -> Middleware
-export function noop () {
-  return function middleware (handler) {
-    return handler
-  }
-}
-
 // Make middleware with less boilerplate. Pass in a function
 // that takes Handler and Request as arguments and then returns
 // a response.
@@ -66,3 +55,40 @@ export function make (f) {
     }
   }
 }
+
+// BUILT-IN / INTERNAL MIDDLEWARE
+
+// The following is middleware that klobb may apply when wrapping the
+// application's final handler.
+
+// Middleware that does nothing
+//
+// () -> Middleware
+export function noop () {
+  return function middleware (handler) {
+    return handler
+  }
+}
+
+// Handle HEAD requests. klobb wraps final handler with this.
+export const wrapHead = (() => {
+  // Turn HEAD request into GET request
+  function headRequest (request) {
+    if (request.method === 'HEAD') return request.set('method', 'GET')
+    return request
+  }
+
+  // Strip response body if response is not nil and original request was HEAD
+  function headResponse (response, request) {
+    if (response && request.method === 'HEAD') {
+      return response.setBody('')
+    } else {
+      return response
+    }
+  }
+
+  return make(async (handler, request) => {
+    const response = await handler(headRequest(request))
+    return headResponse(response, request)
+  })
+})()

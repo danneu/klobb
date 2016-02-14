@@ -167,12 +167,6 @@ class Request extends Immutable.Record(defaults) {
     if (R.head(types) === undefined) return accept.languages()
     return accept.language(R.flatten(types))
   }
-
-  // HELPERS
-
-  inspect () {
-    return JSON.stringify(this.remove('nreq'), null, '  ')
-  }
 }
 
 export default Request

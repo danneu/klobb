@@ -23,11 +23,14 @@ export const createError = belt.createError
 
 // Handler -> Server
 export function serve (handler, opts = {}) {
-  // If handler doesn't return a response, lift into a 404
-  handler = Handler.ensureResponse(handler)
+  // Build-in middleware stack
+  const middleware = compose(
+    // Handle HEAD requests
+    Middleware.wrapHead()
+  )
 
   // Wrap handler so that it responds to any uncaught errors
-  const rootHandler = Handler.whenError(handler, onError)
+  const rootHandler = Handler.whenError(middleware(handler), onError)
 
   const server = http.createServer((nreq, nres) => {
     const responsePromise = rootHandler(Request.fromNode(nreq, opts))

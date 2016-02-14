@@ -171,3 +171,14 @@ test('ignores existing content-length if it can determine the length itself', as
   t.same(res.statusCode, 200)
   t.same(res.headers['content-length'], '5')
 })
+
+// Built-in middleware stack Handles HEAD requests
+
+test('build-in middleware stack handles HEAD requests', async t => {
+  const handler = async (request) => Response.ok('foo')
+  const url = await serve(handler)
+  const response = await client('HEAD', url)
+  t.same(response.statusCode, 200)
+  t.same(response.body, '')
+  t.same(response.headers['content-length'], '0')
+})
