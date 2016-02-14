@@ -96,6 +96,16 @@ class Request extends Immutable.Record(defaults) {
     return typeIs(this.nreq, types)
   }
 
+  // Returns content-type without the charset or an empty string
+  //
+  // String
+  get type () {
+    const type = this.getHeader('content-type')
+    if (!type) return ''
+    return type.split(';')[0]
+  }
+
+  // String
   get charset () {
     const type = this.getHeader('content-type')
     if (!type) return ''
