@@ -55,10 +55,9 @@ class Response extends Immutable.Record(defaults) {
       request = status
       status = undefined
     }
-    status = status || 302
 
     // Ensure status is valid redirect
-    if (!statuses.redirect[status]) status = 302
+    status = statuses.redirect[status] ? status : 302
 
     assert(typeof url === 'string')
     assert(Number.isInteger(status))
@@ -220,7 +219,7 @@ class Response extends Immutable.Record(defaults) {
   // (String, [String]) -> Response
   appendHeader (key, vals) {
     if (typeof vals === 'string') {
-      vals = R.of(vals)
+      vals = [vals]
     }
     return this.updateIn(['headers', key], (current) => {
       current = typeof current === 'string'
