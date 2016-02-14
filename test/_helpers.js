@@ -1,6 +1,7 @@
 
 // 3rd
 import rp from 'request-promise'
+import R from 'ramda'
 // 1st
 import * as klobb from '../lib'
 
@@ -23,4 +24,14 @@ export async function serve (handler, opts = {}) {
       resolve(`http://localhost:${server.address().port}`)
     })
   })
+}
+
+export function nreq (opts = {}) {
+  return R.merge({
+    url: '/',
+    method: 'GET',
+    headers: {},
+    connection: { remoteAddress: '127.0.0.1' },
+    socket: { remoteAddress: '127.0.0.1' }
+  }, opts)
 }

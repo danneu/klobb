@@ -85,7 +85,7 @@ test('Request has basic key/vals', async t => {
     t.same(request.url, '/test?foo=bar')
     t.same(request.method, 'GET')
     t.same(request.path, '/test')
-    t.same(request.querystring, '?foo=bar')
+    t.same(request.querystring, 'foo=bar')
     return
   }
   const url = await serve(handler)

@@ -42,6 +42,7 @@
     "babel-runtime": "6.3.19",
     "chalk": "^1.1.1",
     "commander": "^2.9.0",
+    "content-type": "^1.0.1",
     "cookie": "^0.2.3",
     "etag": "^1.7.0",
     "immutable": "^3.7.6",

@@ -25,7 +25,7 @@ gulp.task('compile-bin', function () {
 })
 
 gulp.task('compile-test', function () {
-  return gulp.src('test/*.js')
+  return gulp.src('test/**/*.js')
   .pipe(cache('test'))
   .pipe(babel({
     presets: ['es2015'],
@@ -55,7 +55,7 @@ gulp.task('compile-src', function () {
 })
 
 gulp.task('test', ['compile'], function () {
-  return gulp.src('build/test/*.js')
+  return gulp.src('build/test/**/*.js')
   .pipe(ava())
 })
 
